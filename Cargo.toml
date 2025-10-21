@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+members = [
+    # Stylus Contract Packages
+    "contracts/disolver",
+    "contracts/decor",
+    "contracts/dior",
+    
+    # Library Packages
+    "libs/delib",
+    "libs/icore",
+    
+    # Native Application Package
+    "apps/ap",
+]
+
+[workspace.dependencies]
