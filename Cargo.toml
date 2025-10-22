@@ -17,12 +17,9 @@ members = [
 [workspace.dependencies]
 alloy-primitives = "=0.8.20"
 alloy-sol-types = "=0.8.20"
-# alloy-provider = { version = "=0.8.2" }
-# alloy-network = "=0.8.2"
-# alloy-signer-local = "=0.8.2"
 clap = "4.5"
+chrono = "0.4.42"
 deli = { path = "libs/deli" }
-disolver = { path = "contracts/disolver" }
 dotenv = "0.15.0"
 ethers = "2.0"
 eyre = "0.6.8"

@@ -11,8 +11,10 @@ alloy-sol-types = { workspace = true }
 # alloy-network = { workspace = true }
 # alloy-signer-local = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
+chrono = { workspace = true }
 deli = { workspace = true }
 eyre = { workspace = true }
+ethers = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 
