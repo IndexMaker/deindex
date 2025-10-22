@@ -2,6 +2,7 @@
 name = "icore"
 version = "0.1.0"
 edition = "2021"
+description = "Index Core Library"
 
 [lib]
-crate-type = ["lib", "cdylib"]
+crate-type = ["lib"]

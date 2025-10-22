@@ -1,4 +1,4 @@
-use delib::{amount::Amount, log_msg, vector::Vector};
+use deli::{amount::Amount, log_msg, vector::Vector};
 
 pub struct Filler {
     pub axpxes: Vector, // (in) executed prices for exchange of individual assets

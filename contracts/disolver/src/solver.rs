@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use delib::{amount::Amount, log_msg, vector::Vector};
+use deli::{amount::Amount, log_msg, vector::Vector};
 
 pub struct Solver {
     pub prices: Vector, // (in) prices of individual assets

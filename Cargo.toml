@@ -5,13 +5,28 @@ members = [
     "contracts/disolver",
     "contracts/decor",
     "contracts/dior",
-    
+
     # Library Packages
-    "libs/delib",
+    "libs/deli",
     "libs/icore",
-    
+
     # Native Application Package
     "apps/ap",
 ]
 
 [workspace.dependencies]
+alloy-primitives = "=0.8.20"
+alloy-sol-types = "=0.8.20"
+# alloy-provider = { version = "=0.8.2" }
+# alloy-network = "=0.8.2"
+# alloy-signer-local = "=0.8.2"
+clap = "4.5"
+deli = { path = "libs/deli" }
+disolver = { path = "contracts/disolver" }
+dotenv = "0.15.0"
+ethers = "2.0"
+eyre = "0.6.8"
+hex = { version = "0.4", default-features = false }
+reqwest = { version = "0.12", default-features = false }
+stylus-sdk = "0.9.0"
+tokio = "1.12.0"

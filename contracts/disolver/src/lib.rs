@@ -6,8 +6,8 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 
-use alloy_primitives::{ruint::aliases::U256, Address, U64};
-use delib::vector::Vector;
+use alloy_primitives::{Address, U256, U64};
+use deli::vector::Vector;
 use stylus_sdk::{
     prelude::*,
     storage::{StorageAddress, StorageBytes, StorageMap, StorageU64},
@@ -193,7 +193,7 @@ impl Disolver {
 
 #[cfg(test)]
 mod test {
-    use delib::{amount::Amount, vector::Vector};
+    use deli::{amount::Amount, vector::Vector};
 
     use super::*;
 

@@ -1,10 +1,7 @@
-//! Workaround for logging debug messages in tests
-//! as console!() macro crashes with SIGSEGV.
 //!
-//! Run tests using:
-//! ```bash
-//!     cargo test --features debug -- --show-output
-//! ```
+//! Workaround for logging debug messages in tests as console!() macro crashes
+//! with SIGSEGV, or code doesn't link.
+//!
 
 #[cfg(feature = "debug")]
 pub fn print_msg(msg: &str) {

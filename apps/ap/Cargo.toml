@@ -2,4 +2,19 @@
 name = "ap"
 version = "0.1.0"
 edition = "2021"
+description = "Off-Chain Access Point"
 
+[dependencies]
+alloy-primitives = { workspace = true }
+alloy-sol-types = { workspace = true }
+# alloy-provider = { workspace = true, features = ["hyper"]}
+# alloy-network = { workspace = true }
+# alloy-signer-local = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+deli = { workspace = true }
+eyre = { workspace = true }
+reqwest = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+
+[features]
+debug = ["deli/debug"]
