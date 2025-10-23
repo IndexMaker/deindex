@@ -65,12 +65,13 @@ impl DisolveContext {
         self.timestamp.set(U64::from(timestamp));
     }
 
-    pub fn set_vector(&mut self, vector_type: U256, data: Vec<u8>) {
+    pub fn set_vector(&mut self, vector_type: U256, data: Vec<u8>) -> Result<(), Vec<u8>> {
         let mut v = self.vectors.setter(vector_type);
         if !v.is_empty() {
-            panic!("Vector already set");
+            Err(b"Vector already set")?;
         }
         v.set_bytes(data);
+        Ok(())
     }
 
     pub fn get_vector(&self, vector_type: U256) -> Vec<u8> {
@@ -78,33 +79,40 @@ impl DisolveContext {
         v.get_bytes()
     }
 
-    fn check_exists(&self) {
+    fn check_exists(&self) -> Result<(), Vec<u8>> {
         if self.address.get().is_empty() {
-            panic!("Context does not exist")
+            Err(b"Context does not exist")?;
         }
+        Ok(())
     }
 
-    fn check_access(&mut self, address: Address, block: u64, timestamp: u64) {
+    fn check_access(
+        &mut self,
+        address: Address,
+        block: u64,
+        timestamp: u64,
+    ) -> Result<(), Vec<u8>> {
         if self.address.get() != address {
-            panic!("Invalid address")
+            Err(b"Invalid address")?;
         }
         if block < self.block.get().to::<u64>() {
-            panic!("Invalid block");
+            Err(b"Invalid block")?;
         }
         if timestamp < self.timestamp.get().to::<u64>() {
-            panic!("Invalid timestamp");
+            Err("Invalid timestamp")?;
         }
+        Ok(())
     }
 
-    fn set_vector_internal(&mut self, vector_type: u8, data: Vec<u8>) {
-        self.set_vector(U256::from(vector_type), data);
+    fn set_vector_internal(&mut self, vector_type: u8, data: Vec<u8>) -> Result<(), Vec<u8>> {
+        self.set_vector(U256::from(vector_type), data)
     }
 
     fn get_vector_internal(&self, vector_type: u8) -> Vec<u8> {
         self.get_vector(U256::from(vector_type))
     }
 
-    pub fn compute(&mut self, context_type: U256) -> Vec<u8> {
+    pub fn compute(&mut self, context_type: U256) -> Result<Vec<u8>, Vec<u8>> {
         let ct = context_type.to::<u8>();
         match ct {
             CT_STRATEGY => {
@@ -114,15 +122,15 @@ impl DisolveContext {
                 let collat = Vector::from_vec(self.get_vector_internal(VT_COLLAT));
                 let mut solver = Solver::new(prices, liquid, matrix, collat);
                 let total_amount = solver.solve();
-                self.set_vector_internal(VT_IAQTYS, solver.iaqtys.to_vec());
-                self.set_vector_internal(VT_IAVALS, solver.iavals.to_vec());
-                self.set_vector_internal(VT_ASSETS, solver.assets.to_vec());
-                self.set_vector_internal(VT_COEFFS, solver.coeffs.to_vec());
-                self.set_vector_internal(VT_NETAVS, solver.netavs.to_vec());
-                self.set_vector_internal(VT_QUOTES, solver.quotes.to_vec());
+                self.set_vector_internal(VT_IAQTYS, solver.iaqtys.to_vec())?;
+                self.set_vector_internal(VT_IAVALS, solver.iavals.to_vec())?;
+                self.set_vector_internal(VT_ASSETS, solver.assets.to_vec())?;
+                self.set_vector_internal(VT_COEFFS, solver.coeffs.to_vec())?;
+                self.set_vector_internal(VT_NETAVS, solver.netavs.to_vec())?;
+                self.set_vector_internal(VT_QUOTES, solver.quotes.to_vec())?;
                 let mut output = Vec::new();
                 total_amount.to_vec(&mut output);
-                output
+                Ok(output)
             }
             CT_FILL => {
                 let prices = Vector::from_vec(self.get_vector_internal(VT_AXPXES));
@@ -135,15 +143,15 @@ impl DisolveContext {
                 let mut filler =
                     Filler::new(prices, axfees, assets, coeffs, iaqtys, quotes, collat);
                 let total_amount = filler.fill();
-                self.set_vector_internal(VT_IFILLS, filler.ifills.to_vec());
-                self.set_vector_internal(VT_IXQTYS, filler.ixqtys.to_vec());
-                self.set_vector_internal(VT_AAFEES, filler.aafees.to_vec());
-                self.set_vector_internal(VT_AAQTYS, filler.aaqtys.to_vec());
-                self.set_vector_internal(VT_CCOVRS, filler.ccovrs.to_vec());
-                self.set_vector_internal(VT_ACOVRS, filler.acovrs.to_vec());
+                self.set_vector_internal(VT_IFILLS, filler.ifills.to_vec())?;
+                self.set_vector_internal(VT_IXQTYS, filler.ixqtys.to_vec())?;
+                self.set_vector_internal(VT_AAFEES, filler.aafees.to_vec())?;
+                self.set_vector_internal(VT_AAQTYS, filler.aaqtys.to_vec())?;
+                self.set_vector_internal(VT_CCOVRS, filler.ccovrs.to_vec())?;
+                self.set_vector_internal(VT_ACOVRS, filler.acovrs.to_vec())?;
                 let mut output = Vec::new();
                 total_amount.to_vec(&mut output);
-                output
+                Ok(output)
             }
             _ => panic!("Invalid context type"),
         }
@@ -158,35 +166,44 @@ pub struct Disolver {
 
 #[public]
 impl Disolver {
-    pub fn create_context(&mut self, context_id: U256) {
-        let address = self.vm().msg_sender();
+    pub fn create_context(&mut self, context_id: U256) -> Result<(), Vec<u8>> {
+        let address = self.vm().tx_origin();
         let block = self.vm().block_number();
         let timestamp = self.vm().block_timestamp();
         let mut context = self.contexts.setter(context_id);
+        if !context.address.get().is_zero() {
+            Err(b"Context already exists")?;
+        }
         context.init(address, block, timestamp);
+        Ok(())
     }
 
-    pub fn submit_vector(&mut self, context_id: U256, vector_type: U256, data: Vec<u8>) {
-        let address = self.vm().msg_sender();
+    pub fn submit_vector(
+        &mut self,
+        context_id: U256,
+        vector_type: U256,
+        data: Vec<u8>,
+    ) -> Result<(), Vec<u8>> {
+        let address = self.vm().tx_origin();
         let block = self.vm().block_number();
         let timestamp = self.vm().block_timestamp();
         let mut context = self.contexts.setter(context_id);
-        context.check_access(address, block, timestamp);
-        context.set_vector(vector_type, data);
+        context.check_access(address, block, timestamp)?;
+        context.set_vector(vector_type, data)
     }
 
-    pub fn get_vector(&self, context_id: U256, vector_type: U256) -> Vec<u8> {
+    pub fn get_vector(&self, context_id: U256, vector_type: U256) -> Result<Vec<u8>, Vec<u8>> {
         let context = self.contexts.getter(context_id);
-        context.check_exists();
-        context.get_vector(vector_type)
+        context.check_exists()?;
+        Ok(context.get_vector(vector_type))
     }
 
-    pub fn compute(&mut self, context_id: U256, context_type: U256) -> Vec<u8> {
-        let address = self.vm().msg_sender();
+    pub fn compute(&mut self, context_id: U256, context_type: U256) -> Result<Vec<u8>, Vec<u8>> {
+        let address = self.vm().tx_origin();
         let block = self.vm().block_number();
         let timestamp = self.vm().block_timestamp();
         let mut context = self.contexts.setter(context_id);
-        context.check_access(address, block, timestamp);
+        context.check_access(address, block, timestamp)?;
         context.compute(context_type)
     }
 }
@@ -259,24 +276,46 @@ mod test {
         let collat_bytes = collat.to_vec();
 
         // create compute context for solver strategy
-        contract.create_context(U256::from(context));
+        contract.create_context(U256::from(context)).unwrap();
 
         // submit inputs
-        contract.submit_vector(U256::from(context), U256::from(VT_PRICES), prices_bytes);
-        contract.submit_vector(U256::from(context), U256::from(VT_LIQUID), liquid_bytes);
-        contract.submit_vector(U256::from(context), U256::from(VT_MATRIX), matrix_bytes);
-        contract.submit_vector(U256::from(context), U256::from(VT_COLLAT), collat_bytes);
+        contract
+            .submit_vector(U256::from(context), U256::from(VT_PRICES), prices_bytes)
+            .unwrap();
+        contract
+            .submit_vector(U256::from(context), U256::from(VT_LIQUID), liquid_bytes)
+            .unwrap();
+        contract
+            .submit_vector(U256::from(context), U256::from(VT_MATRIX), matrix_bytes)
+            .unwrap();
+        contract
+            .submit_vector(U256::from(context), U256::from(VT_COLLAT), collat_bytes)
+            .unwrap();
 
         // compute
-        contract.compute(U256::from(context), U256::from(CT_STRATEGY));
+        contract
+            .compute(U256::from(context), U256::from(CT_STRATEGY))
+            .unwrap();
 
         // collect outputs
-        let iaqtys_bytes = contract.get_vector(U256::from(context), U256::from(VT_IAQTYS));
-        let iavals_bytes = contract.get_vector(U256::from(context), U256::from(VT_IAVALS));
-        let assets_bytes = contract.get_vector(U256::from(context), U256::from(VT_ASSETS));
-        let coeffs_bytes = contract.get_vector(U256::from(context), U256::from(VT_COEFFS));
-        let netavs_bytes = contract.get_vector(U256::from(context), U256::from(VT_NETAVS));
-        let quotes_bytes = contract.get_vector(U256::from(context), U256::from(VT_QUOTES));
+        let iaqtys_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_IAQTYS))
+            .unwrap();
+        let iavals_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_IAVALS))
+            .unwrap();
+        let assets_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_ASSETS))
+            .unwrap();
+        let coeffs_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_COEFFS))
+            .unwrap();
+        let netavs_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_NETAVS))
+            .unwrap();
+        let quotes_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_QUOTES))
+            .unwrap();
 
         // deserialize outputs from binary blobs
         let iaqtys = Vector::from_vec(iaqtys_bytes);
@@ -330,20 +369,40 @@ mod test {
         let axqtys_bytes = axqtys.to_vec();
 
         // submit inputs
-        contract.submit_vector(U256::from(context), U256::from(VT_AXPXES), axpxes_bytes);
-        contract.submit_vector(U256::from(context), U256::from(VT_AXFEES), axfees_bytes);
-        contract.submit_vector(U256::from(context), U256::from(VT_AXQTYS), axqtys_bytes);
+        contract
+            .submit_vector(U256::from(context), U256::from(VT_AXPXES), axpxes_bytes)
+            .unwrap();
+        contract
+            .submit_vector(U256::from(context), U256::from(VT_AXFEES), axfees_bytes)
+            .unwrap();
+        contract
+            .submit_vector(U256::from(context), U256::from(VT_AXQTYS), axqtys_bytes)
+            .unwrap();
 
         // compute
-        contract.compute(U256::from(context), U256::from(CT_FILL));
+        contract
+            .compute(U256::from(context), U256::from(CT_FILL))
+            .unwrap();
 
         // collect outputs
-        let ifills_bytes = contract.get_vector(U256::from(context), U256::from(VT_IFILLS));
-        let ixqtys_bytes = contract.get_vector(U256::from(context), U256::from(VT_IXQTYS));
-        let aafees_bytes = contract.get_vector(U256::from(context), U256::from(VT_AAFEES));
-        let aaqtys_bytes = contract.get_vector(U256::from(context), U256::from(VT_AAQTYS));
-        let ccovrs_bytes = contract.get_vector(U256::from(context), U256::from(VT_CCOVRS));
-        let acovrs_bytes = contract.get_vector(U256::from(context), U256::from(VT_ACOVRS));
+        let ifills_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_IFILLS))
+            .unwrap();
+        let ixqtys_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_IXQTYS))
+            .unwrap();
+        let aafees_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_AAFEES))
+            .unwrap();
+        let aaqtys_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_AAQTYS))
+            .unwrap();
+        let ccovrs_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_CCOVRS))
+            .unwrap();
+        let acovrs_bytes = contract
+            .get_vector(U256::from(context), U256::from(VT_ACOVRS))
+            .unwrap();
 
         // deserialize outputs from binary blobs
         let ifills = Vector::from_vec(ifills_bytes);

@@ -4,6 +4,7 @@
 extern crate alloc;
 
 pub mod amount;
+pub mod labels;
+pub mod log;
 pub mod uint;
 pub mod vector;
-pub mod log;

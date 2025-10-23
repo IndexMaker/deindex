@@ -7,6 +7,7 @@ description = "Arbitrum Stylup Interoperability Library"
 [dependencies]
 alloy-primitives = { workspace = true }
 alloy-sol-types = { workspace = true }
+ethers = { workspace = true, optional = true }
 stylus-sdk = { workspace = true, optional = true }
 
 [dev-dependencies]
@@ -14,9 +15,11 @@ alloy-primitives = { workspace = true, features = ["sha3-keccak"] }
 stylus-sdk = { workspace = true, features = ["stylus-test"] }
 
 [features]
+default = []
 debug = []
 stylus = ["stylus-sdk"]
 stylus-test = ["stylus", "debug"]
+with-ethers = ["ethers"]
 
 [lib]
 crate-type = ["lib"]
