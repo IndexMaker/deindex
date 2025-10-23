@@ -4,13 +4,15 @@ use deli::{amount::Amount, labels::Labels, log_msg, vector::Vector};
 use ethers::{
     middleware::SignerMiddleware,
     prelude::abigen,
-    providers::{Http, Middleware, Provider},
+    providers::{Http, Middleware, PendingTransaction, Provider},
     signers::{LocalWallet, Signer},
-    types::{Address, Filter, U256},
+    types::{Address, U256},
 };
 use eyre::Context;
-use std::sync::Arc;
+use futures::future::join_all;
+use itertools::Itertools;
 use std::{env, str::FromStr};
+use std::{future::Future, pin::Pin, sync::Arc};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -208,15 +210,6 @@ async fn main() -> eyre::Result<()> {
 
     // create compute context for solver strategy
     let context_id = U256::from(gen_unique_id());
-    log_msg!("creating context: {}", context_id);
-
-    disolver
-        .create_context(context_id)
-        .send()
-        .await
-        .context("Failed to crete context (send)")?
-        .await
-        .context("Failed to crete context (receipt)")?;
 
     let prices = Vector {
         data: vec![
@@ -261,52 +254,120 @@ async fn main() -> eyre::Result<()> {
     let matrix_bytes = matrix.to_vec();
     let collat_bytes = collat.to_vec();
 
-    // submit inputs
-    log_msg!("submitting prices: \n\t{:1.3}", prices);
-    disolver
-        .submit_vector(context_id, U256::from(VT_PRICES), prices_bytes)
-        .send()
-        .await
-        .context("Failed to submit prices (send)")?
-        .await
-        .context("Failed to submit prices (receipt)")?;
+    {
+        let mut nonce = client
+            .get_transaction_count(client.address(), None)
+            .await
+            .context("Failed to fetch the current nonce from the Ethereum client")?;
 
-    log_msg!("submitting liquidity: \n\t{:1.3}", liquid);
-    disolver
-        .submit_vector(context_id, U256::from(VT_LIQUID), liquid_bytes)
-        .send()
-        .await
-        .context("Failed to submit liquidity (send)")?
-        .await
-        .context("Failed to submit liquidity (receipt)")?;
+        log_msg!("starting nonce: {}", nonce);
 
-    log_msg!("submitting matrix: \n\t{:2.3}", matrix);
-    disolver
-        .submit_vector(context_id, U256::from(VT_MATRIX), matrix_bytes)
-        .send()
-        .await
-        .context("Failed to submit assets matrix (send)")?
-        .await
-        .context("Failed to submit assets matrix (receipt)")?;
+        let mut next_nonce = move || {
+            let ret = nonce;
+            nonce = nonce.checked_add(U256::one()).unwrap();
+            ret
+        };
 
-    log_msg!("submitting collateral: \n\t{:0.3}", collat);
-    disolver
-        .submit_vector(context_id, U256::from(VT_COLLAT), collat_bytes)
-        .send()
-        .await
-        .context("Failed to submit collateral (send)")?
-        .await
-        .context("Failed to submit collateral (receipt)")?;
+        log_msg!("creating context: {}", context_id);
+        let create_context = disolver.create_context(context_id).nonce(next_nonce());
 
-    // compute
-    log_msg!("submitting compute...");
-    disolver
-        .compute(context_id, U256::from(CT_STRATEGY))
-        .send()
-        .await
-        .context("Failed to compute (send)")?
-        .await
-        .context("Failed to compute (receipt)")?;
+        // submit inputs
+        log_msg!("submitting prices: \n\t{:1.3}", prices);
+        let submit_prices = disolver
+            .submit_vector(context_id, U256::from(VT_PRICES), prices_bytes)
+            .nonce(next_nonce());
+
+        log_msg!("submitting liquidity: \n\t{:1.3}", liquid);
+        let submit_liquid = disolver
+            .submit_vector(context_id, U256::from(VT_LIQUID), liquid_bytes)
+            .nonce(next_nonce());
+
+        log_msg!("submitting matrix: \n\t{:2.3}", matrix);
+        let submit_matrix = disolver
+            .submit_vector(context_id, U256::from(VT_MATRIX), matrix_bytes)
+            .nonce(next_nonce());
+
+        log_msg!("submitting collateral: \n\t{:0.3}", collat);
+        let submit_collat = disolver
+            .submit_vector(context_id, U256::from(VT_COLLAT), collat_bytes)
+            .nonce(next_nonce());
+
+        // compute
+        log_msg!("submitting compute...");
+        let submit_compute = disolver
+            .compute(context_id, U256::from(CT_STRATEGY))
+            .nonce(next_nonce());
+
+        {
+            let mut pending_txs = Vec::<
+                Pin<Box<dyn Future<Output = Result<PendingTransaction<'_, Http>, eyre::Report>>>>,
+            >::new();
+
+            pending_txs.push(Box::pin(async {
+                let tx = create_context
+                    .send()
+                    .await
+                    .context("Failed to send: create context")?;
+                log_msg!("sent successfully: create context");
+                Ok(tx)
+            }));
+
+            for call in [
+                &submit_prices,
+                &submit_liquid,
+                &submit_matrix,
+                &submit_collat,
+            ] {
+                pending_txs.push(Box::pin(async {
+                    let tx = call.send().await.context("Failed to send: submit vector")?;
+                    log_msg!("sent successfully: submit vector");
+                    Ok(tx)
+                }));
+            }
+
+            pending_txs.push(Box::pin(async {
+                let tx = submit_compute
+                    .send()
+                    .await
+                    .context("Failed to send: submit compute")?;
+                log_msg!("sent successfully: compute");
+                Ok(tx)
+            }));
+
+            let first = pending_txs.remove(0);
+            let last = pending_txs.pop().unwrap();
+
+            log_msg!("sending transactions...");
+
+            first.await?.await.context("Failed getting recepit")?;
+
+            let (sent_tx, send_errors): (Vec<_>, Vec<_>) =
+                join_all(pending_txs).await.into_iter().partition_result();
+
+            if !send_errors.is_empty() {
+                Err(eyre::eyre!(
+                    "Errors while sending transactions: {:?}",
+                    send_errors
+                ))?;
+            }
+
+            let (tx_receipts, receipt_errors): (Vec<_>, Vec<_>) =
+                join_all(sent_tx).await.into_iter().partition_result();
+
+            if !receipt_errors.is_empty() {
+                Err(eyre::eyre!(
+                    "Errors while getting receipts: {:?}",
+                    receipt_errors
+                ))?;
+            }
+
+            for _tx_receipt in tx_receipts {
+                log_msg!("Receipt: {:?}", _tx_receipt);
+            }
+
+            last.await?.await.context("Failed getting recepit")?;
+        }
+    }
 
     log_msg!("fetching results...");
     // collect outputs

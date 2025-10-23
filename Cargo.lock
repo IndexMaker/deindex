@@ -570,6 +570,8 @@ dependencies = [
  "deli",
  "ethers",
  "eyre",
+ "futures",
+ "itertools 0.14.0",
  "reqwest 0.12.15",
  "tokio",
 ]

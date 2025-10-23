@@ -1,0 +1,61 @@
+name: Rust Stylus Build
+
+## THIS IS TO BE INVESTIGATED 
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  build_stylus_wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. Install Rust Nightly Toolchain
+      - name: Install Rust Nightly
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2024-03-01 # Use a recent, known-good nightly date for stability
+          target: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      # 2. Add the WASM Target
+      - name: Add WASM Target
+        run: rustup target add wasm32-unknown-unknown
+
+      # 3. Install cargo-stylus CLI
+      - name: Install cargo-stylus
+        run: |
+          # Use a specific version or the latest
+          cargo install cargo-stylus --version 0.5.0 # Or use the latest version you're working with
+          # If the version doesn't matter, just use cargo install cargo-stylus
+
+      # 4. Run the Stylus Build Command
+      - name: Build Stylus WASM (Release Mode)
+        # The Stylus build command runs a specific compilation pipeline
+        # It's crucial to use the 'build' subcommand provided by cargo-stylus
+        run: cargo stylus build --release
+
+      # 5. Optional: Verification and Upload (Highly Recommended)
+      - name: Check WASM Validity (Optional but good for confidence)
+        run: cargo stylus check --release
+
+      - name: Find WASM Artifact
+        # Stylus artifacts are typically saved to this path
+        id: find_artifact
+        run: echo "wasm_path=$(find target/wasm32-unknown-unknown/release -name "*.wasm" -print -quit)" >> $GITHUB_OUTPUT
+
+      - name: Upload WASM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stylus-wasm-artifact
+          path: ${{ steps.find_artifact.outputs.wasm_path }}
+          if-no-files-found: error
