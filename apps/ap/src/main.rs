@@ -2,6 +2,8 @@ use chrono::Utc;
 use clap::Parser;
 use deli::{amount::Amount, labels::Labels, log_msg, vector::Vector};
 use ethers::{
+    abi::Detokenize,
+    contract::FunctionCall,
     middleware::SignerMiddleware,
     prelude::abigen,
     providers::{Http, Middleware, Provider},
@@ -9,8 +11,10 @@ use ethers::{
     types::{Address, Filter, U256},
 };
 use eyre::Context;
+use futures::future::join_all;
+use itertools::Itertools;
+use std::{borrow::Borrow, env, str::FromStr};
 use std::sync::Arc;
-use std::{env, str::FromStr};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -33,6 +37,77 @@ fn gen_unique_id() -> i64 {
     let now = Utc::now();
     let value = now.timestamp_micros();
     value
+}
+
+
+struct TxSender {
+    client: Arc<SignerMiddleware<Provider<Http>, LocalWallet>>,
+    signed_txs: Vec<ethers::core::types::Bytes>,
+}
+
+impl TxSender {
+    pub fn new(client: Arc<SignerMiddleware<Provider<Http>, LocalWallet>>) -> Self {
+        Self {
+            client,
+            signed_txs: Vec::new(),
+        }
+    }
+
+    pub async fn add<B, M, D>(&mut self, mut call: FunctionCall<B, M, D>) -> eyre::Result<()>
+    where
+        B: Borrow<M>,
+        M: Middleware + 'static,
+        D: Detokenize,
+    {
+        log_msg!("adding transaction...");
+        // self.client.fill_transaction(&mut call.tx, call.block).await?;
+        // log_msg!("gas {:?}", call.tx.gas());
+        // log_msg!("gas price {:?}", call.tx.gas_price());
+        call.tx.set_gas(1_000_000u64);
+        call.tx.set_gas_price(2_000_000_000);
+        call.tx.set_chain_id(self.client.signer().chain_id());
+        call.tx.set_from(self.client.signer().address());
+        let signature = self
+            .client
+            .signer()
+            .sign_transaction(&call.tx)
+            .await
+            .context("Failed to sign tx")?;
+        let signed_tx: ethers::core::types::Bytes = call.tx.rlp_signed(&signature);
+        self.signed_txs.push(signed_tx);
+        Ok(())
+    }
+
+    pub async fn flush(self) -> eyre::Result<()> {
+        log_msg!("sending transactions...");
+        let mut pending_txs = Vec::new();
+
+        for signed_tx in self.signed_txs {
+            let pending_tx = self
+                .client
+                .send_raw_transaction(signed_tx)
+                .await
+                .context("Failed to send tx")?;
+            pending_txs.push(pending_tx);
+        }
+
+        log_msg!("awaiting receipts...");
+        let (tx_receipts, send_errors): (Vec<_>, Vec<_>) =
+            join_all(pending_txs).await.into_iter().partition_result();
+
+        if !send_errors.is_empty() {
+            Err(eyre::eyre!(
+                "Errors while sending transactions: {:?}",
+                send_errors
+            ))?;
+        }
+
+        for _tx_receipt in tx_receipts {
+            log_msg!("Receipt: {:?}", _tx_receipt);
+        }
+
+        Ok(())
+    }
 }
 
 pub const CT_STRATEGY: u8 = 1;
@@ -99,6 +174,19 @@ async fn main() -> eyre::Result<()> {
         ]"#
     );
 
+    let mut nonce = client
+        .get_transaction_count(client.address(), None)
+        .await
+        .context("Failed to fetch the current nonce from the Ethereum client")?;
+
+    log_msg!("starting nonce: {}", nonce);
+
+    let mut next_nonce = move || {
+        let ret = nonce;
+        nonce = nonce.checked_add(U256::one()).unwrap();
+        ret
+    };
+
     // ---------------------------------------------------------
     log_msg!("\n[Testing RPC interaction with Dior contract]\n");
 
@@ -124,12 +212,9 @@ async fn main() -> eyre::Result<()> {
         assets,
         weights
     );
-    dior.create_index(index_id, assets.to_vec(), weights.to_vec())
-        .send()
-        .await
-        .context("Failed to create index (await sent)")?
-        .await
-        .context("Failed to create index (await receipt)")?;
+    let create_index = dior
+        .create_index(index_id, assets.to_vec(), weights.to_vec())
+        .nonce(next_nonce());
 
     let index_created_at = client
         .get_block_number()
@@ -137,26 +222,20 @@ async fn main() -> eyre::Result<()> {
         .context("Failed to get block number")?;
 
     log_msg!("user submits first order");
-    dior.submit_order(
-        index_id,
-        Amount::from_u128_with_scale(150_00, 2).to_u256_ethers(),
-    )
-    .send()
-    .await
-    .context("Failed to submit order 1 (send)")?
-    .await
-    .context("Failed to submit order 1 (receipt)")?;
+    let submit_order_1 = dior
+        .submit_order(
+            index_id,
+            Amount::from_u128_with_scale(150_00, 2).to_u256_ethers(),
+        )
+        .nonce(next_nonce());
 
     log_msg!("user submits another order");
-    dior.submit_order(
-        index_id,
-        Amount::from_u128_with_scale(150_00, 2).to_u256_ethers(),
-    )
-    .send()
-    .await
-    .context("Failed to submit order 2 (send)")?
-    .await
-    .context("Failed to submit order 2 (receipt)")?;
+    let submit_order_2 = dior
+        .submit_order(
+            index_id,
+            Amount::from_u128_with_scale(150_00, 2).to_u256_ethers(),
+        )
+        .nonce(next_nonce());
 
     let inventory_assets = Labels {
         data: vec![101, 102, 103, 104],
@@ -172,12 +251,17 @@ async fn main() -> eyre::Result<()> {
     };
 
     log_msg!("supplier submits inventory");
-    dior.submit_inventory(inventory_assets.to_vec(), inventory_positions.to_vec())
-        .send()
-        .await
-        .context("Failed to submit inventory (send)")?
-        .await
-        .context("Failed to submit inventory (receipt)")?;
+    let submit_inventory = dior
+        .submit_inventory(inventory_assets.to_vec(), inventory_positions.to_vec())
+        .nonce(next_nonce());
+
+    log_msg!("sending transactions...");
+    let mut tx_sender = TxSender::new(client.clone());
+    tx_sender.add(create_index).await?;
+    tx_sender.add(submit_order_1).await?;
+    tx_sender.add(submit_order_2).await?;
+    tx_sender.add(submit_inventory).await?;
+    tx_sender.flush().await?;
 
     let new_orders: Vec<NewIndexOrderFilter> = dior
         .event::<NewIndexOrderFilter>()
@@ -208,15 +292,6 @@ async fn main() -> eyre::Result<()> {
 
     // create compute context for solver strategy
     let context_id = U256::from(gen_unique_id());
-    log_msg!("creating context: {}", context_id);
-
-    disolver
-        .create_context(context_id)
-        .send()
-        .await
-        .context("Failed to crete context (send)")?
-        .await
-        .context("Failed to crete context (receipt)")?;
 
     let prices = Vector {
         data: vec![
@@ -261,52 +336,43 @@ async fn main() -> eyre::Result<()> {
     let matrix_bytes = matrix.to_vec();
     let collat_bytes = collat.to_vec();
 
+    log_msg!("creating context: {}", context_id);
+    let create_context = disolver.create_context(context_id).nonce(next_nonce());
+
     // submit inputs
     log_msg!("submitting prices: \n\t{:1.3}", prices);
-    disolver
+    let submit_prices = disolver
         .submit_vector(context_id, U256::from(VT_PRICES), prices_bytes)
-        .send()
-        .await
-        .context("Failed to submit prices (send)")?
-        .await
-        .context("Failed to submit prices (receipt)")?;
+        .nonce(next_nonce());
 
     log_msg!("submitting liquidity: \n\t{:1.3}", liquid);
-    disolver
+    let submit_liquid = disolver
         .submit_vector(context_id, U256::from(VT_LIQUID), liquid_bytes)
-        .send()
-        .await
-        .context("Failed to submit liquidity (send)")?
-        .await
-        .context("Failed to submit liquidity (receipt)")?;
+        .nonce(next_nonce());
 
     log_msg!("submitting matrix: \n\t{:2.3}", matrix);
-    disolver
+    let submit_matrix = disolver
         .submit_vector(context_id, U256::from(VT_MATRIX), matrix_bytes)
-        .send()
-        .await
-        .context("Failed to submit assets matrix (send)")?
-        .await
-        .context("Failed to submit assets matrix (receipt)")?;
+        .nonce(next_nonce());
 
     log_msg!("submitting collateral: \n\t{:0.3}", collat);
-    disolver
+    let submit_collat = disolver
         .submit_vector(context_id, U256::from(VT_COLLAT), collat_bytes)
-        .send()
-        .await
-        .context("Failed to submit collateral (send)")?
-        .await
-        .context("Failed to submit collateral (receipt)")?;
+        .nonce(next_nonce());
 
     // compute
     log_msg!("submitting compute...");
-    disolver
+    let submit_compute = disolver
         .compute(context_id, U256::from(CT_STRATEGY))
-        .send()
-        .await
-        .context("Failed to compute (send)")?
-        .await
-        .context("Failed to compute (receipt)")?;
+        .nonce(next_nonce());
+
+    let mut tx_sender = TxSender::new(client.clone());
+    tx_sender.add(create_context).await?;
+    for call in [submit_prices, submit_liquid, submit_matrix, submit_collat] {
+        tx_sender.add(call).await?;
+    }
+    tx_sender.add(submit_compute).await?;
+    tx_sender.flush().await?;
 
     log_msg!("fetching results...");
     // collect outputs
@@ -398,40 +464,31 @@ async fn main() -> eyre::Result<()> {
 
     // submit inputs
     log_msg!("submitting asset executed prices: \n\t{:0.3}", axpxes);
-    disolver
+    let submit_axpxes = disolver
         .submit_vector(context_id, U256::from(VT_AXPXES), axpxes_bytes)
-        .send()
-        .await
-        .context("Failed to submit assets executed prices (send)")?
-        .await
-        .context("Failed to submit assets executed prices (receipt)")?;
+        .nonce(next_nonce());
 
     log_msg!("submitting asset executed fees: \n\t{:0.3}", axfees);
-    disolver
+    let submit_axfees = disolver
         .submit_vector(context_id, U256::from(VT_AXFEES), axfees_bytes)
-        .send()
-        .await
-        .context("Failed to submit assets executed fees (send)")?
-        .await
-        .context("Failed to submit assets executed fees (receipt)")?;
+        .nonce(next_nonce());
 
     log_msg!("submitting asset executed quantities: \n\t{:0.3}", axqtys);
-    disolver
+    let submit_axqtys = disolver
         .submit_vector(context_id, U256::from(VT_AXQTYS), axqtys_bytes)
-        .send()
-        .await
-        .context("Failed to submit assets executed quantities (send)")?
-        .await
-        .context("Failed to submit assets executed quantities (receipt)")?;
+        .nonce(next_nonce());
 
     // compute
-    disolver
+    let submit_compute = disolver
         .compute(context_id, U256::from(CT_FILL))
-        .send()
-        .await
-        .context("Failed to compute (send)")?
-        .await
-        .context("Failed to compute (receipt)")?;
+        .nonce(next_nonce());
+
+    let mut tx_sender = TxSender::new(client.clone());
+    for call in [submit_axpxes, submit_axfees, submit_axqtys] {
+        tx_sender.add(call).await?;
+    }
+    tx_sender.add(submit_compute).await?;
+    tx_sender.flush().await?;
 
     // collect outputs
     let ifills_bytes = disolver

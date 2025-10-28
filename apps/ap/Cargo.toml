@@ -17,6 +17,8 @@ deli = { workspace = true, features = [
 ], default-features = false }
 eyre = { workspace = true }
 ethers = { workspace = true }
+futures = { workspace = true }
+itertools = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 
