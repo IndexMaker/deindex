@@ -12,7 +12,9 @@ alloy-sol-types = { workspace = true }
 # alloy-signer-local = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 chrono = { workspace = true }
-deli = { workspace = true }
+deli = { workspace = true, features = [
+    "with-ethers",
+], default-features = false }
 eyre = { workspace = true }
 ethers = { workspace = true }
 reqwest = { workspace = true }
