@@ -8,7 +8,7 @@ use ethers::{
     prelude::abigen,
     providers::{Http, Middleware, Provider},
     signers::{LocalWallet, Signer},
-    types::{Address, U256},
+    types::{Address, Filter, U256},
 };
 use eyre::Context;
 use futures::future::join_all;

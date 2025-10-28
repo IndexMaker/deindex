@@ -138,7 +138,6 @@ impl Filler {
             let asset_qty = &self.axqtys.data[row];
             let asset_carry_overs = &mut self.acovrs.data[row];
             let iaqtys_row = &self.iaqtys.data[row_start..row_offset];
-            let coeffs_row = &mut self.coeffs.data[row_start..row_offset];
             let aafees_row = &mut self.aafees.data[row_start..row_offset];
             let aaqtys_row = &mut self.aaqtys.data[row_start..row_offset];
 
@@ -153,21 +152,11 @@ impl Filler {
                 // - filled_index_quantity[col] = index_fill_rate[col] x quoted_index_quantity[col]
                 *filled_index_quantity =
                     index_fill_rate.checked_mul(*quoted_index_quantity).unwrap();
-                // - asset_assigned_fee[row,col] = index_fill_rate[col] x asset_coeff[row,col] x axfees[row]
-                // - asset_assigned_qty[row,col] = index_fill_rate[col] x asset_coeff[row,col] x axqtys[row]
-                let asset_coeff = coeffs_row[col].checked_mul(*filled_index_quantity).unwrap();
-                let aafee = asset_coeff.checked_mul(*asset_fee).unwrap();
-                let aaqty = asset_coeff.checked_mul(*asset_qty).unwrap();
-                if aaqty.is_less_than(&max_qty) {
-                    *asset_assigned_qty = aaqty;
-                    *asset_assigned_fee = aafee;
-                } else {
-                    // We need to cap to max for that order, and proportionally reduce the fee
-                    let aaqqty_frac = max_qty.checked_div(aaqty).unwrap();
-                    let aafee_max = aaqqty_frac.checked_mul(aafee).unwrap();
-                    *asset_assigned_qty = max_qty;
-                    *asset_assigned_fee = aafee_max;
-                }
+                // - asset_assigned_qty[row,col] = index_fill_rate[col] x iaqtys[row]
+                *asset_assigned_qty = index_fill_rate.checked_mul(max_qty).unwrap();
+                // - asset_assigned_fee[row,col] = index_fill_rate[col] x (asset_assigned_qty[row,col] / axqtys[row,col]) x axfees[row]
+                let aaqty_frac = asset_assigned_qty.checked_div(*asset_qty).unwrap();
+                *asset_assigned_fee = asset_fee.checked_mul(aaqty_frac).unwrap();
                 // - asset_assigned_val[row,col] = asset_assigned_qty[row,col] x axpxes[row]
                 let asset_assigned_val = asset_assigned_qty.checked_mul(*asset_px).unwrap();
                 let asset_assigned_cost =
