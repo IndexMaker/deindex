@@ -37,20 +37,20 @@ optimization (Solver).
 
 |Smart Contract/Entity|Role in DeFi Architecture|Key Function|
 |---|---|---|
-|Dior (Index Order Mgr)|Core Protocol Contract|"Manages the order lifecycle| owns the Index Book data| and orchestrates calls to other contracts (Matching| Minting)."|
+|Dior (Index Order Mgr)|Core Protocol Contract|Manages the order lifecycle| owns the Index Book data| and orchestrates calls to other contracts (Matching| Minting).|
 |Decor (Collateral Mgr)|Collateral/Vault Contract|Handles the secure receipt and lock-up of user collateral (likely using Permit20 approval).|
-|Dematcher (Matching Eng)|Matching Logic Contract|"Executes the immediate| on-chain matching logic against available liquidity in the books."|
+|Dematcher (Matching Eng)|Matching Logic Contract|Executes the immediate, on-chain matching logic against available liquidity in the books.|
 |Dimer (Inventory Mgr)|Liquidity/Asset Contract|Manages the balances and updates the supply/demand for the individual component assets of the index.|
-|Deminter (ITP ERC20)|Token Standard Contract|"The contract for the Index Tracking Token (ITP) itself| which handles the Minting of new tokens to the user."|
+|Deminter (ITP ERC20)|Token Standard Contract|The contract for the Index Tracking Token (ITP) itself, which handles the Minting of new tokens to the user.|
 |Debatcher (Batching)|Queue Management Contract|Holds non-instantly fillable orders and interacts with the external Solver for optimization.|
-|Solver|External HFT Agent|"An off-chain, meticulous optimizer that determines the best execution for batched orders."|
+|Solver|External HFT Agent|An off-chain, meticulous optimizer that determines the best execution for batched orders.|
 
 |Data Structure|Content|
 |---|---|
-|Index Order Book|"Bids & Asks, Demand (orders), Supply (in-stock), Liquidity (on-market), Price (as quoted), Last Update Time."|
-|Asset Order Books|"Bids & Asks, Supply (in-stock), Liquidity (on-market), Price (as quoted), Last Update Time (per asset)."|
+|Index Order Book|Bids & Asks, Demand (orders), Supply (in-stock), Liquidity (on-market), Price (as quoted), Last Update Time.|
+|Asset Order Books|Bids & Asks, Supply (in-stock), Liquidity (on-market), Price (as quoted), Last Update Time (per asset).|
 |Index|owner, assets, weights (The index definition).|
-|Index Order|collateral deposited, collateral spend (minted), collateral engaged (in-progress)."|
+|Index Order|collateral deposited, collateral spend (minted), collateral engaged (in-progress).|
 
 ### The Flow as Smart Contract Interactions
 
