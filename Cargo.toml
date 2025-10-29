@@ -5,6 +5,7 @@ members = [
     "contracts/disolver",
     "contracts/decor",
     "contracts/dior",
+    "contracts/dimer",
 
     # Library Packages
     "libs/deli",

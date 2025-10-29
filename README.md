@@ -7,87 +7,65 @@ This is ***Decentralised Index Maker (DeIndex)*** project.
 
 ## Architecture
 
-#### **On-Chain Components:**
+### **On-Chain Components:**
 
 There is plan to produce several smart-contracts:
 
-- `debasket` - Decentralised Basket Manager
-- `decor`    - Decentralised Collateral Router
-- `deminter` - Decentralised ITP Token Minting
-- `dior`     - Decentralised Index Order Manager
-- `disolver` - Decentralised Index Solver Strategy
+- `debatcher` - Decentralised Batch Manager
+- `decor`     - Decentralised Collateral Router
+- `dematcher` - Decentralised Matching Engine
+- `deminter`  - Decentralised ITP Token Minting
+- `dimer`     - Decentralised Inventory Manager
+- `dior`      - Decentralised Index Order Manager
 
-#### **Off-Chain Components**
+### **Off-Chain Components**
 
 And we will have an off-chain robot:
 
-- `ap` - Authorized Provider
+- `ap`      - Authorized Provider for supplying assets from CEX / DEX
+- `solver`  - Solver off-loading `dematcher` by computing fill "suggestions"
+- `relayer` - RPC Relayer for collateral routing
 
-#### **Interaction**
+### **Interaction**
 
-<img src="./docs/DeIndex.jpg">
+<img src="./docs/DeIndex2.jpg">
 
-Here is rough overview of the interaction:
+The flow illustrates an intricate, multi-contract interaction designed to
+process the creation (minting) of an index token (ITP ERC20) in exchange for
+underlying collateral, using both instant on-chain matching and off-chain batch
+optimization (Solver).
 
-***NOTE:** By no means this is a final design, and it will be updated as we progress with development.*
+### The Flow as Smart Contract Interactions
 
-- User will interact with Web3 app, which will send an order message containing *ERC20Permit (EIP-2612)* signed by user. Message will be sent via interaction with `Dior` contract, which will:
-    - record the order, and
-    - organise orders into batches.
-- `AP` an off-chain service, which sends orders to CEX, will periodically *"poke"* `Dior` contract to obtain next batch. The *"poke"* will include market-data.
+#### Flow A: Instant Fill (On-Chain)
 
-**Note:** It is critical that `AP` in the *"poke"* sends live market-data to
-`Dior` contract, so that the `Disolver` contract, which is invoked by `Dior`
-contract will compute _fillable_ asset orders. Note that `AP` sends those orders
-to CEX, and they must have prices and quantities that match current state of
-order books, and we must be mindfull that this is time-critical operation.
+This is the standard, fast path, executed atomically within a single transaction if possible.
 
-*-- Here is the boundary where `AP` interacts with `Dior` sending data, which
-could be validated and signed. Note that sending orders is time-critical and
-opting out from verification of asset orders may be necessary. `AP` is a trusted
-service, and it should validate the orders on its own without involving on-chain
-activity. `AP` is polling `Dior`, so it can trust computed orders (tbd) --*
+1. Actor initiates: The Actor (user) sends a transaction authorizing Decor to spend their collateral using the 1. Send Permit20 signature/call.
 
-- `Dior` contract will organise next batch of orders to be processed, and it will:
-    - interact with `Debasket` to obtain underlying assets for all orders in a batch, and
-    - send batch data to `Disolver` so it can compute all trading parameters, and then
-    - emit an event containing *computation context ID*.
-- `Disolver` contract will: 
-    - compute strategy, and 
-    - store resulting data in its *internal computation context*.
+1. Decor Logic: 2. Confirm Collateral checks the collateral in the contract.
 
-*-- Here is another the boundary where `AP` will be receiving computed orders,
-we may want to validate and sign, but again we must consider that this is
-time-critical path, and `AP` is a trusted service (tbd) --*
+1. Order Submission: Decor calls Dior (3. Submit Order), passing the user's details and collateral status.
 
-- `AP` will: 
-    - receive an event containing *computation context ID`, and
-    - will retrieve from `Disolver` contract from that computation context a
-    vector of computed underlying asset quantities from 
-    - send orders to CEX accordingly and receive fills
-    - interact with `Disolver` contract sending the fills (prices, quantities, fees)
+1. Matching Attempt: Dior calls Dematcher (4. Match Instant Fill).
 
-**Note:** We will need to also interact with `Decor` contract to do
-collateral routing (tbd)
+1. Book Update: Dematcher successfully executes the fill, updating state variables in the Asset Order Books and notifying Dimer (8. Submit Inventory Update) to update its internal supply records.
 
-*-- Here is the boundary where `AP` will be interacting with `Disolver`, we may
-we may want to validate and sign, but again we must consider that this is
-time-critical path, and `AP` is a trusted service (tbd) --*
+1. Finalization: Dematcher calls back to Dior (A.1 Instant Fill - Fully Filled). Dior then calls Deminter (A.2. Mint Token) to finalize the index token transfer to the user.
 
-- `Disolver` contract will:
-    - compute filled index quantities, and 
-    - quantities unfilled, carried-over to next iteration, and
-    - quantities of underlying assets that were received, but not yet allocated
-    to any index order.
-    - store all the above results into *computation context* for later retrieval.
+#### Flow B: Batch / Solve (Off-Chain Optimization)
 
-- In the next *"poke"* from `AP` to `Dior` contract, the `Dior` contract will:
-    - check results in the *computation context*, and
-    - update state of index orders in the last batch, and
-    - remove fully-filled index orders from last batch, and 
-        - replace them with new index orders
-        - send them to minting to `Deminter` contract (tbd)
+This path handles complex or large orders that require external, potentially more "meticulous" computation for the best price execution (a common pattern in DeFi, similar to AMMs or decentralized exchanges).
 
+1. Dematcher → Debatcher: If the instant match is incomplete, the remaining order portion is placed into the Debatcher smart contract queue.
+
+1. External Solver Operation: The Solver (an external, off-chain service, maybe run by a sequencer or specialized agent) pulls the batch (B.2 Get Next Batch), determines the optimal way to fill those orders, and sends the calculated fill details back to the Debatcher contract (B.3 Submit Fill Suggestions).
+
+1. On-Chain Execution: The Debatcher then triggers the Dematcher (B.4 Match Suggested Fills) to execute the fills based on the Solver's suggestions.
+
+#### Summary
+
+This architecture showcases a sophisticated DeFi design utilizing multiple specialized contracts for core functions (Collateral, Order Management, Matching, and Minting), while incorporating an off-chain component (Solver) to maintain efficiency and competitive pricing for complex or batched orders.
 
 
 ## Development

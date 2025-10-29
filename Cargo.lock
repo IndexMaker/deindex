@@ -1437,6 +1437,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "dimer"
+version = "0.1.0"
+dependencies = [
+ "alloy-primitives",
+ "alloy-sol-types",
+ "deli",
+ "dotenv",
+ "ethers",
+ "eyre",
+ "hex",
+ "stylus-sdk",
+ "tokio",
+]
+
+[[package]]
 name = "dior"
 version = "0.1.0"
 dependencies = [

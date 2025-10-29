@@ -17,13 +17,18 @@ use stylus_sdk::{
 
 sol! {
     event NewIndexOrder(address sender);
-    event NewInventory(address sender);
 }
 
 #[storage]
 pub struct IndexOrder {
+    /// Total amount of collateral user sent us
     collateral_amount: StorageU128,
+
+    /// Total amount of collateral converted to index tokens
     collateral_spent: StorageU128,
+
+    /// Current amount of collateral in-progress
+    collateral_engaged: StorageU128,
 }
 
 impl IndexOrder {
@@ -43,11 +48,20 @@ impl IndexOrder {
         Amount::from_u128(self.collateral_spent.get())
     }
 
+    fn get_engaged_amount(&self) -> Amount {
+        Amount::from_u128(self.collateral_engaged.get())
+    }
+
     fn get_remaining_amount(&self) -> Amount {
         let total_amount = self.get_total_amount();
         let spent_amount = self.get_spent_amount();
+        let engaged_amount = self.get_engaged_amount();
         let remaining_amount = total_amount
-            .checked_sub(spent_amount)
+            .checked_sub(
+                spent_amount
+                    .checked_add(engaged_amount)
+                    .expect("Math overflow"),
+            )
             .expect("Math underflow");
         remaining_amount
     }
@@ -56,16 +70,16 @@ impl IndexOrder {
 #[storage]
 pub struct Index {
     active: StorageBool,
-    address: StorageAddress,
+    owner: StorageAddress,
     assets: StorageBytes,
     weights: StorageBytes,
     orders: StorageMap<Address, IndexOrder>,
 }
 
 impl Index {
-    pub fn init(&mut self, address: Address, assets: Vec<u8>, weights: Vec<u8>) {
+    pub fn init(&mut self, owner: Address, assets: Vec<u8>, weights: Vec<u8>) {
         self.active.set(true);
-        self.address.set(address);
+        self.owner.set(owner);
         self.assets.set_bytes(assets);
         self.weights.set_bytes(weights);
     }
@@ -86,33 +100,9 @@ impl Index {
 }
 
 #[storage]
-pub struct Inventory {
-    active: StorageBool,
-    assets: StorageBytes,
-    positions: StorageBytes,
-}
-
-impl Inventory {
-    fn is_active(&self) -> bool {
-        self.active.get()
-    }
-
-    fn submit(&mut self, assets: Vec<u8>, positions: Vec<u8>) {
-        self.active.set(true);
-        self.assets.set_bytes(assets);
-        self.positions.set_bytes(positions);
-    }
-
-    fn get_inventory(&self) -> (Vec<u8>, Vec<u8>) {
-        (self.assets.get_bytes(), self.positions.get_bytes())
-    }
-}
-
-#[storage]
 #[entrypoint]
 pub struct Dior {
     indexes: StorageMap<U256, Index>,
-    inventory: StorageMap<Address, Inventory>,
 }
 
 #[public]
@@ -146,13 +136,6 @@ impl Dior {
         Ok(())
     }
 
-    pub fn submit_inventory(&mut self, assets: Vec<u8>, positions: Vec<u8>) {
-        let sender = self.vm().tx_origin();
-        let mut inventory = self.inventory.setter(sender);
-        inventory.submit(assets, positions);
-        log(self.vm(), NewInventory { sender });
-    }
-
     pub fn get_orders(&self, index_id: U256, users: Vec<Address>) -> Result<Vec<u8>, Vec<u8>> {
         let index = self.indexes.getter(index_id);
         if !index.is_active() {
@@ -165,20 +148,10 @@ impl Dior {
         }
         Ok(output)
     }
-
-    pub fn get_inventory(&self, supplier: Address) -> Result<(Vec<u8>, Vec<u8>), Vec<u8>> {
-        let inventory = self.inventory.getter(supplier);
-        if !inventory.is_active() {
-            Err(b"No such suppier")?;
-        }
-        let result = inventory.get_inventory();
-        Ok(result)
-    }
 }
 
 #[cfg(test)]
 mod test {
-    use std::collections::BTreeMap;
 
     use alloy_primitives::address;
     use alloy_sol_types::SolEvent;
@@ -189,7 +162,6 @@ mod test {
     const ADMIN: Address = address!("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
     const USER_1: Address = address!("0x70997970C51812dc3A010C7d01b50e0d17dc79C8");
     const USER_2: Address = address!("0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC");
-    const SUPPLIER: Address = address!("0x90F79bf6EB2c4f870365E785982E1f101E93b906");
     const SOLVER: Address = address!("0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65");
 
     #[test]
@@ -218,67 +190,25 @@ mod test {
         log_msg!("weights: \n\t{:1.3}", weights);
 
         let index_id = U256::from(1001);
-        contract.create_index(index_id, assets.to_vec(), weights.to_vec());
+        contract
+            .create_index(index_id, assets.to_vec(), weights.to_vec())
+            .unwrap();
 
         log_msg!("\nuser_1 submits order");
         vm.set_sender(USER_1);
-        contract.submit_order(index_id, Amount::from_u128_with_scale(150_00, 2).to_u256());
+        contract
+            .submit_order(index_id, Amount::from_u128_with_scale(150_00, 2).to_u256())
+            .unwrap();
 
         log_msg!("\nuser_2 submits order");
         vm.set_sender(USER_2);
-        contract.submit_order(index_id, Amount::from_u128_with_scale(150_00, 2).to_u256());
-
-        let inventory_assets = Labels {
-            data: vec![101, 102, 103, 104],
-        };
-
-        let inventory_positions = Vector {
-            data: vec![
-                Amount::from_u128_with_scale(0_50, 2),
-                Amount::from_u128_with_scale(1_00, 2),
-                Amount::from_u128_with_scale(0_05, 2),
-                Amount::from_u128_with_scale(0_25, 2),
-            ],
-        };
-
-        log_msg!("\nsupplier submits inventory");
-        vm.set_sender(SUPPLIER);
-        contract.submit_inventory(inventory_assets.to_vec(), inventory_positions.to_vec());
+        contract
+            .submit_order(index_id, Amount::from_u128_with_scale(150_00, 2).to_u256())
+            .unwrap();
 
         log_msg!("\nsolver collecting events...");
         vm.set_sender(SOLVER);
         let emitted_logs = vm.get_emitted_logs();
-
-        let suppliers: Vec<_> = emitted_logs
-            .iter()
-            .filter_map(|(topics, data)| {
-                let inventory = NewInventory::decode_raw_log(topics, data, true);
-                inventory.ok()
-            })
-            .map(|inventory| inventory.sender)
-            .collect();
-
-        let mut total_positions = BTreeMap::new();
-        for supplier in suppliers {
-            let (assets, positions) = contract.get_inventory(supplier).unwrap();
-            let assets = Labels::from_vec(assets);
-            let positions = Vector::from_vec(positions);
-            for i in 0..assets.data.len() {
-                let asset = assets.data[i];
-                let position = positions.data[i];
-                let entry = total_positions.entry(asset);
-                entry
-                    .and_modify(|q: &mut Amount| {
-                        *q = q.checked_add(position).unwrap();
-                    })
-                    .or_insert(position);
-            }
-        }
-        log_msg!("\ninventory:");
-        for (asset, position) in total_positions {
-            log_msg!("\tposition [{}]: {}", asset, position);
-            let _ = (asset, position);
-        }
 
         let users: Vec<_> = emitted_logs
             .iter()
