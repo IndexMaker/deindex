@@ -23,6 +23,9 @@ struct Cli {
 
     #[arg(long)]
     dior_address: String,
+
+    #[arg(long)]
+    dimer_address: String,
 }
 
 fn get_private_key() -> String {
@@ -67,6 +70,7 @@ async fn main() -> eyre::Result<()> {
     let provider = Provider::<Http>::try_from(rpc_url)?;
     let disolver_address: Address = cli.disolver_address.parse()?;
     let dior_address: Address = cli.dior_address.parse()?;
+    let dimer_address: Address = cli.dimer_address.parse()?;
 
     let priv_key = get_private_key();
     let wallet = LocalWallet::from_str(&priv_key)?;
@@ -91,13 +95,20 @@ async fn main() -> eyre::Result<()> {
         r#"[
             function createIndex(uint256 index_id, uint8[] memory assets, uint8[] memory weights) external
             function submitOrder(uint256 index_id, uint256 collateral_amount) external
-            function submitInventory(uint8[] memory assets, uint8[] memory positions) external
             function getOrders(uint256 index_id, address[] memory users) external view returns (uint8[] memory)
-            function getInventory(address supplier) external view returns (uint8[] memory, uint8[] memory)
             event NewIndexOrder(address sender)
+        ]"#
+    );
+    
+    abigen!(
+        Dimer,
+        r#"[
+            function submitInventory(uint8[] memory assets, uint8[] memory positions) external
+            function getInventory(address supplier) external view returns (uint8[] memory, uint8[] memory)
             event NewInventory(address sender)
         ]"#
     );
+
 
     // ---------------------------------------------------------
     log_msg!("\n[Testing RPC interaction with Dior contract]\n");
@@ -171,15 +182,17 @@ async fn main() -> eyre::Result<()> {
         ],
     };
 
+    let dimer = Dimer::new(dior_address, client.clone());
+
     log_msg!("supplier submits inventory");
-    dior.submit_inventory(inventory_assets.to_vec(), inventory_positions.to_vec())
+    dimer.submit_inventory(inventory_assets.to_vec(), inventory_positions.to_vec())
         .send()
         .await
         .context("Failed to submit inventory (send)")?
         .await
         .context("Failed to submit inventory (receipt)")?;
 
-    let new_orders: Vec<NewIndexOrderFilter> = dior
+    let new_orders: Vec<NewIndexOrderFilter> = dimer
         .event::<NewIndexOrderFilter>()
         .from_block(index_created_at)
         .query()
@@ -190,7 +203,7 @@ async fn main() -> eyre::Result<()> {
         log_msg!("new order from: {}", _new_order.sender);
     }
 
-    let _new_supplies: Vec<NewInventoryFilter> = dior
+    let _new_supplies: Vec<NewInventoryFilter> = dimer
         .event::<NewInventoryFilter>()
         .from_block(index_created_at)
         .query()

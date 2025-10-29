@@ -1,0 +1,248 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8">
+  <diagram name="Page-1" id="eOb7vJ5aH0Tqdn7caQtT">
+    <mxGraphModel dx="1230" dy="1616" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="l7-P9APy26BUJHnirJCP-9" value="4. Match Instant Fill" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-1" target="l7-P9APy26BUJHnirJCP-4">
+          <mxGeometry y="20" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="210" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-21" value="indexes" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;endSize=10;startSize=10;align=left;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-1" target="l7-P9APy26BUJHnirJCP-20">
+          <mxGeometry x="0.5135" y="-10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="330" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-29" value="A.2. Mint Token" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-1" target="l7-P9APy26BUJHnirJCP-28">
+          <mxGeometry x="0.3333" y="10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="160" />
+              <mxPoint x="570" y="160" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;endArrow=openAsync;endFill=0;endSize=10;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-1" target="l7-P9APy26BUJHnirJCP-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="720" y="320" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="600" y="270" />
+              <mxPoint x="850" y="270" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-1" value="Dior&lt;div&gt;(Index Order Mgr)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="520" y="180" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;endArrow=openAsync;endFill=0;endSize=10;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-2" target="l7-P9APy26BUJHnirJCP-31">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1130" y="130" />
+              <mxPoint x="1130" y="130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-2" value="Dimer&lt;div&gt;(Inventory Mgr)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="180" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-14" value="5. Match Instant Fill" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;endSize=10;startSize=10;edgeStyle=orthogonalEdgeStyle;align=right;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-4" target="l7-P9APy26BUJHnirJCP-13">
+          <mxGeometry x="-0.2126" y="-10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="860" y="320" />
+              <mxPoint x="760" y="320" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-16" value="7. Update Instant Fill Assets" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;endSize=10;startSize=10;edgeStyle=orthogonalEdgeStyle;align=left;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-4" target="l7-P9APy26BUJHnirJCP-15">
+          <mxGeometry x="-0.2308" y="10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="320" />
+              <mxPoint x="960" y="320" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-25" value="6. Get Asset Weights" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-4" target="l7-P9APy26BUJHnirJCP-1">
+          <mxGeometry x="0.1111" y="-10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="840" y="260" />
+              <mxPoint x="610" y="260" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-26" value="A.1 Instant Fill - Fully Filled" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-4" target="l7-P9APy26BUJHnirJCP-1">
+          <mxGeometry x="0.1198" y="-10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="860" y="140" />
+              <mxPoint x="610" y="140" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-27" value="8. Submit Inventory Update" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-4" target="l7-P9APy26BUJHnirJCP-2">
+          <mxGeometry y="20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-34" value="B.1. Put order back&lt;div&gt;into priority queue - Partial Fill&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-4" target="l7-P9APy26BUJHnirJCP-33">
+          <mxGeometry x="0.5" y="10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="90" />
+              <mxPoint x="880" y="90" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-4" value="Dematcher&lt;div&gt;(Matching Eng)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="800" y="180" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-7" value="3. Submit Order" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-5" target="l7-P9APy26BUJHnirJCP-1">
+          <mxGeometry y="20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-5" value="Decor&lt;div&gt;(Collateral Mgr)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="280" y="180" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-8" value="1. Send Permit20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-6" target="l7-P9APy26BUJHnirJCP-5">
+          <mxGeometry y="20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-6" value="Actor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="130" y="180" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-12" value="2. Confirm Collateral&lt;div&gt;(skipped for small orders)&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;endArrow=async;endFill=1;startSize=10;endSize=10;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-10" target="l7-P9APy26BUJHnirJCP-5">
+          <mxGeometry x="-0.25" y="10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;shape=link;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-10" target="l7-P9APy26BUJHnirJCP-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-10" value="RPC Relayer&lt;div&gt;(Collateral Routing)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="280" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-13" value="&lt;u&gt;Index Order&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;Book:&lt;/span&gt;&lt;/u&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Bids &amp;amp; Asks&lt;/li&gt;&lt;li&gt;Demand (orders)&lt;/li&gt;&lt;li&gt;Supply (in-stock)&lt;/li&gt;&lt;li&gt;Liquidity (on-market)&lt;/li&gt;&lt;li&gt;Price (as quoted)&lt;/li&gt;&lt;li&gt;Last Update Time&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="680" y="394" width="160" height="126" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-15" value="&lt;u&gt;Asset Order&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;Books:&lt;/span&gt;&lt;/u&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Bids &amp;amp; Asks&lt;/span&gt;&lt;/li&gt;&lt;li&gt;Supply (in-stock)&lt;/li&gt;&lt;li&gt;Liquidity (on-market)&lt;/li&gt;&lt;li&gt;Price (as quoted)&lt;/li&gt;&lt;li&gt;Last UpdateTime&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="880" y="394" width="160" height="106" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-18" value="CeFi /&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;DeFi&lt;/span&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="265" y="-130" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-23" value="orders" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;endSize=10;startSize=10;align=left;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-20" target="l7-P9APy26BUJHnirJCP-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-20" value="&lt;u&gt;Index:&lt;/u&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;owner&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;assets&lt;/span&gt;&lt;br&gt;&lt;/li&gt;&lt;li&gt;weights&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="365" y="290" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-22" value="&lt;u&gt;Index&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;Order:&lt;/span&gt;&lt;/u&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;collateral deposited&amp;nbsp;&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;collateral spend (minted)&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;collateral engaged (in-progress)&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="305" y="440" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-28" target="l7-P9APy26BUJHnirJCP-6">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="190" y="-50" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="580" y="-160" />
+              <mxPoint x="145" y="-160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-28" value="Deminter&lt;div&gt;(ITP ERC20)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="510" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-32" value="Get Supply Demand" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=async;endFill=1;endSize=10;startSize=10;align=right;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-31" target="l7-P9APy26BUJHnirJCP-2">
+          <mxGeometry x="0.5" y="-10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1120" y="110" />
+              <mxPoint x="1120" y="110" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shape=link;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-31" target="l7-P9APy26BUJHnirJCP-41">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-43" value="Submit Inventory" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-31" target="l7-P9APy26BUJHnirJCP-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1160" y="120" />
+              <mxPoint x="1160" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-31" value="Asset Supplier&lt;div&gt;(AP)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1080" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-38" value="B.2 Get Next Batch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;endArrow=async;endFill=1;endSize=10;startSize=10;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-35" target="l7-P9APy26BUJHnirJCP-33">
+          <mxGeometry y="-10" relative="1" as="geometry">
+            <mxPoint x="940" y="-70" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="840" y="-50" />
+              <mxPoint x="840" y="-50" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-40" value="B.4 Match Suggested Fills" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-33" target="l7-P9APy26BUJHnirJCP-4">
+          <mxGeometry x="-0.0433" y="10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="950" y="30" />
+              <mxPoint x="950" y="120" />
+              <mxPoint x="900" y="120" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;endArrow=openAsync;endFill=0;endSize=10;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-33" target="l7-P9APy26BUJHnirJCP-35">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="850" y="-50" />
+              <mxPoint x="850" y="-50" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-33" value="Debatcher&lt;div&gt;(Batching)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="800" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-36" value="B.3 Submit Fill Suggestions" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-35" target="l7-P9APy26BUJHnirJCP-33">
+          <mxGeometry x="0.0095" relative="1" as="geometry">
+            <mxPoint x="1030" y="-90" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="880" y="-80" />
+              <mxPoint x="880" y="-80" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-37" value="B.3 Get Asset Weights" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endSize=10;startSize=10;endArrow=async;endFill=1;align=left;" edge="1" parent="1" source="l7-P9APy26BUJHnirJCP-35" target="l7-P9APy26BUJHnirJCP-1">
+          <mxGeometry x="-0.4617" y="-10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="660" y="-130" />
+              <mxPoint x="660" y="100" />
+              <mxPoint x="590" y="100" />
+            </Array>
+            <mxPoint x="10" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-35" value="Solver" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="800" y="-160" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l7-P9APy26BUJHnirJCP-41" value="CeFi /&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;DeFi&lt;/span&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1065" y="-130" width="150" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
