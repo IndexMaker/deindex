@@ -98,7 +98,7 @@ impl Dimer {
     ) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>), Vec<u8>> {
         let inventory = self.inventory.getter(supplier);
         if !inventory.is_active() {
-            return Err(b"No such supplier".to_vec());
+            Err(b"No such supplier")?;
         }
         let result = inventory.get_inventory();
         Ok(result)
@@ -112,14 +112,14 @@ impl Dimer {
     ) -> Result<(Vec<u8>, Vec<u8>), Vec<u8>> {
         let mut inventory = self.inventory.setter(supplier);
         if !inventory.is_active() {
-            return Err(b"Supplier not active".to_vec());
+            Err(b"Supplier not active")?;
         }
 
         let order_assets = Labels::from_vec(assets);
         let order_quantities = Vector::from_vec(orders);
 
         if order_assets.data.len() != order_quantities.data.len() {
-            return Err(b"Order batch length mismatch".to_vec());
+            Err(b"Order batch length mismatch")?;
         }
 
         if !order_assets.data.is_sorted_by_key(|x| get_asset_id(*x)) {
