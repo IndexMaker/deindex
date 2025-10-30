@@ -4,6 +4,7 @@
 extern crate alloc;
 
 pub mod amount;
+pub mod asset;
 pub mod labels;
 pub mod log;
 pub mod uint;

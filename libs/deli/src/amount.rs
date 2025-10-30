@@ -22,6 +22,7 @@ pub struct Amount(pub u128);
 
 impl Amount {
     pub const ZERO: Amount = Amount(0);
+    pub const EPSILON: Amount = Amount(1);
     pub const ONE: Amount = Amount(Self::SCALE);
     pub const SCALE: u128 = 1_000_000_000__000_000_000;
     pub const DECIMALS: usize = 18;
@@ -48,6 +49,14 @@ impl Amount {
 
     pub fn is_less_than(&self, other: &Self) -> bool {
         self.0 < other.0
+    }
+    
+    pub fn is_not(&self) -> bool {
+        // Note: we don't want to call this function is_zero(), because we're
+        // representing decimal numbers, and we should compare against some
+        // threshold and not against absolute 0. The function of is_not() is to
+        // tell that amount is not set rather than having zero value.
+        self.0 == 0
     }
 
     pub fn from_u128_with_scale(value: u128, scale: u8) -> Self {

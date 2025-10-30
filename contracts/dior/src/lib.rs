@@ -9,7 +9,7 @@ use alloc::vec::Vec;
 
 use alloy_primitives::{Address, U256};
 use alloy_sol_types::sol;
-use deli::amount::Amount;
+use deli::{amount::Amount, asset::*, labels::Labels};
 use stylus_sdk::{
     prelude::*,
     storage::{StorageAddress, StorageBool, StorageBytes, StorageMap, StorageU128},
@@ -77,11 +77,23 @@ pub struct Index {
 }
 
 impl Index {
-    pub fn init(&mut self, owner: Address, assets: Vec<u8>, weights: Vec<u8>) {
+    pub fn init(
+        &mut self,
+        owner: Address,
+        assets_bytes: Vec<u8>,
+        weights_bytes: Vec<u8>,
+    ) -> Result<(), Vec<u8>> {
+        let assets = Labels::from_vec(assets_bytes);
+        if !assets.data.is_sorted_by_key(|x| get_asset_id(*x)) {
+            Err(b"Assets must be sorted")?;
+        }
+
         self.active.set(true);
         self.owner.set(owner);
-        self.assets.set_bytes(assets);
-        self.weights.set_bytes(weights);
+        self.assets.set_bytes(assets.to_vec());
+        self.weights.set_bytes(weights_bytes);
+
+        Ok(())
     }
 
     fn is_active(&self) -> bool {
@@ -118,7 +130,7 @@ impl Dior {
         if index.is_active() {
             Err(b"Index already exists")?;
         }
-        index.init(sender, assets, weights);
+        index.init(sender, assets, weights)?;
         Ok(())
     }
 
