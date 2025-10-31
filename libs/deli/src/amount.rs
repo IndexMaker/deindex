@@ -23,6 +23,7 @@ pub struct Amount(pub u128);
 impl Amount {
     pub const ZERO: Amount = Amount(0);
     pub const EPSILON: Amount = Amount(1);
+    pub const MAX: Amount = Amount(u128::MAX);
     pub const ONE: Amount = Amount(Self::SCALE);
     pub const SCALE: u128 = 1_000_000_000__000_000_000;
     pub const DECIMALS: usize = 18;

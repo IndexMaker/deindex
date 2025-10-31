@@ -125,8 +125,12 @@ impl Solver {
             let total_asset = &mut self.assets.data[row];
 
             for col in 0..num_cols {
+                let asset_weight = &matrix_row[col];
+                if asset_weight.is_not() {
+                    continue;
+                }
                 let order_quantity = self.quotes.data[col];
-                let asset_quantity = matrix_row[col].checked_mul(order_quantity).unwrap();
+                let asset_quantity = asset_weight.checked_mul(order_quantity).unwrap();
                 iaqtys_row[col] = asset_quantity;
                 *total_asset = total_asset.checked_add(asset_quantity).unwrap();
             }
