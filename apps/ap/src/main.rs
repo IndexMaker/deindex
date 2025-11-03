@@ -99,16 +99,16 @@ async fn main() -> eyre::Result<()> {
             event NewIndexOrder(address sender)
         ]"#
     );
-    
+
     abigen!(
         Dimer,
         r#"[
-            function submitInventory(uint8[] memory assets, uint8[] memory positions) external
-            function getInventory(address supplier) external view returns (uint8[] memory, uint8[] memory)
+            function submitInventory(uint8[] memory assets, uint8[] memory positions, uint8[] memory prices, uint8[] memory liquidity, uint8[] memory slopes) external
+            function getInventory(address supplier) external view returns (uint8[] memory, uint8[] memory, uint8[] memory, uint8[] memory, uint8[] memory)
+            function matchInventory(address supplier, uint8[] memory assets, uint8[] memory orders) external returns (uint8[] memory, uint8[] memory)
             event NewInventory(address sender)
         ]"#
     );
-
 
     // ---------------------------------------------------------
     log_msg!("\n[Testing RPC interaction with Dior contract]\n");
@@ -182,10 +182,44 @@ async fn main() -> eyre::Result<()> {
         ],
     };
 
+    let inventory_liquidity = Vector {
+        data: vec![
+            Amount::from_u128_with_scale(2_00, 2),
+            Amount::from_u128_with_scale(10_00, 2),
+            Amount::from_u128_with_scale(5_00, 2),
+            Amount::from_u128_with_scale(1_00, 2),
+        ],
+    };
+
+    let inventory_prices = Vector {
+        data: vec![
+            Amount::from_u128_with_scale(50_000_00, 2),
+            Amount::from_u128_with_scale(5_000_00, 2),
+            Amount::from_u128_with_scale(500_00, 2),
+            Amount::from_u128_with_scale(100_00, 2),
+        ],
+    };
+
+    let inventory_slopes = Vector {
+        data: vec![
+            Amount::from_u128_with_scale(0_05, 2),
+            Amount::from_u128_with_scale(0_01, 2),
+            Amount::from_u128_with_scale(0_10, 2),
+            Amount::from_u128_with_scale(0_20, 2),
+        ],
+    };
+
     let dimer = Dimer::new(dior_address, client.clone());
 
     log_msg!("supplier submits inventory");
-    dimer.submit_inventory(inventory_assets.to_vec(), inventory_positions.to_vec())
+    dimer
+        .submit_inventory(
+            inventory_assets.to_vec(),
+            inventory_positions.to_vec(),
+            inventory_liquidity.to_vec(),
+            inventory_prices.to_vec(),
+            inventory_slopes.to_vec(),
+        )
         .send()
         .await
         .context("Failed to submit inventory (send)")?
