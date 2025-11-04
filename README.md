@@ -12,6 +12,7 @@ This is ***Decentralised Index Maker (DeIndex)*** project.
 There is plan to produce several smart-contracts:
 
 - `daxos`     - Decentralised Matching Engine
+- `decks`     - Decentralised Index Definitions
 - `decor`     - Decentralised Collateral Router
 - `dion`      - Decentralised ITP Token Minting
 - `dior`      - Decentralised Index Order Manager
