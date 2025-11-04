@@ -5,6 +5,7 @@ members = [
     "contracts/daxos",
     "contracts/decks",
     "contracts/decor",
+    "contracts/dion",
     "contracts/dior",
     "contracts/disolver",
     "contracts/dres",
