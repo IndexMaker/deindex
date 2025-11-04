@@ -6,5 +6,5 @@ pub extern "C" fn main() {}
 
 #[cfg(feature = "export-abi")]
 fn main() {
-    dior::print_from_args();
+    daxos::print_from_args();
 }

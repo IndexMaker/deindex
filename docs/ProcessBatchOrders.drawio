@@ -1,0 +1,89 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8">
+  <diagram name="Page-1" id="-DOuKYp8LIozQAfojnlE">
+    <mxGraphModel dx="984" dy="631" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-1" value="&lt;div&gt;&lt;span style=&quot;&quot;&gt;3. Get Asset Weights&lt;/span&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;entryX=1;entryY=0.15;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="lDKxXJgY88Iwk6ZaEvAK-6" target="lDKxXJgY88Iwk6ZaEvAK-10" edge="1">
+          <mxGeometry x="0.2849" y="-20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-2" value="&lt;div&gt;&lt;div&gt;9. Fill Index Order&lt;/div&gt;&lt;/div&gt;&lt;div&gt;(update order status)&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;" parent="1" source="lDKxXJgY88Iwk6ZaEvAK-6" target="lDKxXJgY88Iwk6ZaEvAK-9" edge="1">
+          <mxGeometry x="-0.6" y="-20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-3" value="5. Match Inventory" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="lDKxXJgY88Iwk6ZaEvAK-6" target="lDKxXJgY88Iwk6ZaEvAK-12" edge="1">
+          <mxGeometry x="-0.4667" y="20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-4" value="4. Compute Batch Order&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;7. Compute Fills Distribution&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;" parent="1" source="lDKxXJgY88Iwk6ZaEvAK-6" target="lDKxXJgY88Iwk6ZaEvAK-13" edge="1">
+          <mxGeometry y="-10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-5" value="10. Mint ITP Token&lt;div&gt;(if fill-rate 100% for any order)&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;entryX=1;entryY=0.75;entryDx=0;entryDy=0;labelBackgroundColor=none;" parent="1" source="lDKxXJgY88Iwk6ZaEvAK-6" target="lDKxXJgY88Iwk6ZaEvAK-14" edge="1">
+          <mxGeometry x="0.1914" y="-21" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-17" value="2. Get Next Batch&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;8. Fill Orders (update batch status)&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="lDKxXJgY88Iwk6ZaEvAK-6" target="lDKxXJgY88Iwk6ZaEvAK-16" edge="1">
+          <mxGeometry x="0.3032" y="22" relative="1" as="geometry">
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-6" value="Daxos" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-7" value="1. Poke: Process Batch" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="-TUr4UDqmRjJENiuQ9p--1" target="lDKxXJgY88Iwk6ZaEvAK-6" edge="1">
+          <mxGeometry x="-0.4286" y="10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="390" y="180" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-9" value="Dior" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="120" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-10" value="Deck" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="120" y="520" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-11" value="6. Returns matched&lt;div&gt;quantities and execution prices&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;dashed=1;labelBackgroundColor=none;" parent="1" source="lDKxXJgY88Iwk6ZaEvAK-12" target="lDKxXJgY88Iwk6ZaEvAK-6" edge="1">
+          <mxGeometry x="0.0345" y="-20" relative="1" as="geometry">
+            <mxPoint x="660" y="460" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="740" y="300" />
+              <mxPoint x="530" y="300" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-12" value="Dres" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="710" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-13" value="Disolver" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="440" y="580" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-14" value="Dion" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="120" y="160" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-15" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Process Batch Orders&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;labelBackgroundColor=none;" parent="1" vertex="1">
+          <mxGeometry x="340" y="40" width="280" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-16" value="Drip" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="720" y="520" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-TUr4UDqmRjJENiuQ9p--2" value="" style="group;labelBackgroundColor=none;" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="460.63" y="100" width="78.75" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="-TUr4UDqmRjJENiuQ9p--1" value="" style="ellipse;shape=umlControl;whiteSpace=wrap;html=1;labelBackgroundColor=none;" vertex="1" parent="-TUr4UDqmRjJENiuQ9p--2">
+          <mxGeometry width="78.75" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="lDKxXJgY88Iwk6ZaEvAK-8" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" parent="-TUr4UDqmRjJENiuQ9p--2" vertex="1">
+          <mxGeometry x="29.370000000000005" y="30" width="20" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

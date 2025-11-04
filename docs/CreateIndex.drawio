@@ -1,0 +1,56 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8">
+  <diagram name="Page-1" id="0TQ-eJyStJKI9h-Djc0A">
+    <mxGraphModel dx="984" dy="631" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-6" value="2. Create Index&lt;div&gt;/w weights&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;6. Submit Quote&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-5" edge="1">
+          <mxGeometry x="0.2849" y="-20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-7" value="3. Create Order Book" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-4" edge="1">
+          <mxGeometry x="-0.3776" y="-18" relative="1" as="geometry">
+            <mxPoint x="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-9" value="4. Get Asset Prices &amp;amp; Liquidity" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-8" edge="1">
+          <mxGeometry x="-0.186" y="18" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-11" value="5. Compute Quote:&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Price &amp;amp; Capacity&lt;/span&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-10" edge="1">
+          <mxGeometry y="-10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-1" value="Daxos" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-3" value="1. Create Index&lt;div&gt;w/ weights&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="bL7tILl7jsjW9v_8rGP5-2" target="bL7tILl7jsjW9v_8rGP5-1" edge="1">
+          <mxGeometry x="-0.1836" y="18" relative="1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-2" value="Issuer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" parent="1" vertex="1">
+          <mxGeometry x="485" y="140" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-4" value="Dior" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="120" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-5" value="Deck" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="120" y="520" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-8" value="Dres" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="710" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-10" value="Disolver" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="440" y="520" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-12" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Create Index &amp;amp; Initial Quote&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="310" y="40" width="340" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

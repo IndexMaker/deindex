@@ -20,12 +20,12 @@ sol! {
 
 #[storage]
 #[entrypoint]
-pub struct Daxos {
+pub struct Drip {
     owner: StorageAddress
 }
 
 #[public]
-impl Daxos {
+impl Drip {
 }
 
 #[cfg(test)]

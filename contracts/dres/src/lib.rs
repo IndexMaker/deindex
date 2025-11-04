@@ -109,7 +109,9 @@ impl Dres {
         supplier: Address,
         assets: Vec<u8>,
         orders: Vec<u8>,
+        order_type: u8,
     ) -> Result<(Vec<u8>, Vec<u8>), Vec<u8>> {
+        let _ = order_type;
         let mut inventory = self.inventory.setter(supplier);
         if !inventory.is_active() {
             Err(b"Supplier not active")?;

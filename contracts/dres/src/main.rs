@@ -6,5 +6,5 @@ pub extern "C" fn main() {}
 
 #[cfg(feature = "export-abi")]
 fn main() {
-    dimer::print_from_args();
+    dres::print_from_args();
 }

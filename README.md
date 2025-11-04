@@ -11,12 +11,13 @@ This is ***Decentralised Index Maker (DeIndex)*** project.
 
 There is plan to produce several smart-contracts:
 
-- `debatcher` - Decentralised Batch Manager
+- `daxos`     - Decentralised Matching Engine
 - `decor`     - Decentralised Collateral Router
-- `dematcher` - Decentralised Matching Engine
-- `deminter`  - Decentralised ITP Token Minting
-- `dimer`     - Decentralised Inventory Manager
+- `dion`      - Decentralised ITP Token Minting
 - `dior`      - Decentralised Index Order Manager
+- `disolver`  - Decentralised Index Order Solver
+- `dres`      - Decentralised Inventory Manager
+- `drip`      - Decentralised Batch Manager
 
 ### **Off-Chain Components**
 
@@ -27,6 +28,50 @@ And we will have an off-chain robot:
 - `relayer` - RPC Relayer for collateral routing
 
 ### **Interaction**
+
+#### Create Index & Initial Quote
+
+Here *Issuer* wants to add new index to the system.
+
+<img src="./docs/CreateIndex.jpg">
+
+#### New Order: Instant Fill
+
+Here *User* places new order, which gets instantly filled, and
+and ITP Index token is minted by *Dion*.
+
+<img src="./docs/InstantFill.jpg">
+
+#### New Order: Enqueue into Batch Orders
+
+Here *User* places new order, which is too big for an instant fill,
+and it gets placed into batch orders managed by *Drip*.
+
+<img src="./docs/EnqueueIntoBatchOrders.jpg">
+
+#### Process Batch Orders
+
+Here external service sends a *Poke* to process next batch iteration, where
+some orders are sent to matching against inventory, and some receive ITP Index
+token minted, and all the unfilled orders are continued in next batch.
+
+<img src="./docs/ProcessBatchOrders.jpg">
+
+#### Update Index Quotes
+
+Here external service sends a *Poke* to update index quotes, i.e. prices and capacity
+so that they are used the next time instant fill is processed.
+
+<img src="./docs/UpdateIndexQuotes.jpg">
+
+#### Submit Inventory
+
+Here external service adds new *Inventory* to the pool.
+
+<img src="./docs/SubmitInventory.jpg">
+
+
+#### Previous Design (slightly changed now - TODO: update this document)
 
 <img src="./docs/DeIndex2.jpg">
 
