@@ -17,40 +17,109 @@ fn convert_to_u128(value: U128) -> u128 {
     value.to::<u128>()
 }
 
+#[inline]
+fn convert_from_u128(value: u128) -> U256 {
+    U256::from_limbs([value as u64, (value >> 64) as u64, 0, 0])
+}
+
+#[inline]
+fn convert_from_u8(value: u8) -> U256 {
+    U256::from_limbs([value as u64, 0, 0, 0])
+}
+
+/// Optimized integer square root for U256 using the Babylonian method.
+/// This method is gas-efficient, relying on quadratic convergence.
+/// It returns the floor of the square root.
+#[inline]
+fn sqrt_u256(n: U256) -> Option<U256> {
+    if n.is_zero() {
+        return Some(U256::ZERO);
+    }
+
+    // Newton method:
+    //  x_{k+1} = x_k - f(x_k) / f'(x_k)
+    //
+    // And for square root we have:
+    //  f(x) = x^2 - N
+    //  f'(x) = 2x
+    //  x_{k+1} = x_k - (x_k^2 - N) / (2 x_k) = ((N / x_k) + x_k) / 2
+    //
+    // This is also known as Babylonian method or Heron's method.
+    //
+    // Note the x_k series is monotonically decreasing (non-oscilating), i.e.
+    // for every (next) k+1 it is always true that: x_{k+1} <= x_k
+    //
+    let two = convert_from_u128(2);
+    let mut current = n;
+    let mut next = U256::ONE.checked_add(n)?.checked_div(two)?;
+
+    while next < current {
+        current = next;
+        next = n.checked_div(next)?.checked_add(next)?.checked_div(two)?;
+    }
+    Some(current)
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Amount(pub u128);
 
 impl Amount {
     pub const ZERO: Amount = Amount(0);
     pub const EPSILON: Amount = Amount(1);
+    pub const MAX: Amount = Amount(u128::MAX);
     pub const ONE: Amount = Amount(Self::SCALE);
+    pub const TWO: Amount = Amount(2 * Self::SCALE);
+    pub const FOUR: Amount = Amount(4 * Self::SCALE);
     pub const SCALE: u128 = 1_000_000_000__000_000_000;
+    pub const SCALE_SQRT: u128 = 1_000_000_000;
     pub const DECIMALS: usize = 18;
 
     pub fn checked_add(self, rhs: Self) -> Option<Self> {
-        let result = U256::from(self.0) + U256::from(rhs.0);
+        let result = self.to_u256() + rhs.to_u256();
         Some(Self(try_convert_to_u128(result)?))
     }
 
     pub fn checked_sub(self, rhs: Self) -> Option<Self> {
-        let result = U256::from(self.0) - U256::from(rhs.0);
+        let result = self.to_u256() - rhs.to_u256();
         Some(Self(try_convert_to_u128(result)?))
     }
 
     pub fn checked_mul(self, rhs: Self) -> Option<Self> {
-        let result = U256::from(self.0) * U256::from(rhs.0) / U256::from(Self::SCALE);
+        let result = (self.to_u256() * rhs.to_u256()) / Self::u256_scale();
         Some(Self(try_convert_to_u128(result)?))
     }
 
     pub fn checked_div(self, rhs: Self) -> Option<Self> {
-        let result = U256::from(self.0) * U256::from(Self::SCALE) / U256::from(rhs.0);
+        let result = (self.to_u256() * Self::u256_scale()) / rhs.to_u256();
         Some(Self(try_convert_to_u128(result)?))
     }
 
+    pub fn checked_sq(self) -> Option<Self> {
+        let this = self.to_u256();
+        let result = (this * this) / Self::u256_scale();
+        Some(Self(try_convert_to_u128(result)?))
+    }
+
+    pub fn checked_sqrt(self) -> Option<Self> {
+        let result = sqrt_u256(self.to_u256())? * convert_from_u128(Self::SCALE_SQRT);
+        Some(Self(try_convert_to_u128(result)?))
+    }
+
+    #[inline]
     pub fn is_less_than(&self, other: &Self) -> bool {
         self.0 < other.0
     }
     
+    #[inline]
+    pub fn min(&self, other: &Self) -> Self {
+        if self.is_less_than(other) {
+            *self
+        } else {
+            *other
+        }
+    }
+
+    #[inline]
     pub fn is_not(&self) -> bool {
         // Note: we don't want to call this function is_zero(), because we're
         // representing decimal numbers, and we should compare against some
@@ -60,31 +129,37 @@ impl Amount {
     }
 
     pub fn from_u128_with_scale(value: u128, scale: u8) -> Self {
-        let result =
-            U256::from(value) * U256::from(Self::SCALE) / U256::from(10).pow(U256::from(scale));
+        let result = convert_from_u128(value) * convert_from_u128(Self::SCALE)
+            / convert_from_u128(10).pow(convert_from_u8(scale));
         Self(try_convert_to_u128(result).unwrap())
     }
 
+    #[inline]
     pub fn from_slice(slice: &[u8]) -> Self {
         Self(uint::read_u128(slice))
     }
 
+    #[inline]
     pub fn to_vec(&self, output: &mut Vec<u8>) {
         uint::write_u128(self.0, output);
     }
 
+    #[inline]
     pub fn from_u128_raw(value: u128) -> Self {
         Self(value)
     }
 
+    #[inline]
     pub fn to_u128_raw(&self) -> u128 {
         self.0
     }
 
+    #[inline]
     pub fn from_u128(value: U128) -> Self {
         Self(convert_to_u128(value))
     }
 
+    #[inline]
     pub fn to_u128(&self) -> U128 {
         U128::from(self.0)
     }
@@ -93,8 +168,14 @@ impl Amount {
         Some(Self(try_convert_to_u128(value)?))
     }
 
+    #[inline]
     pub fn to_u256(&self) -> U256 {
-        U256::from(self.0)
+        convert_from_u128(self.0)
+    }
+
+    #[inline]
+    pub fn u256_scale() -> U256 {
+        convert_from_u128(Self::SCALE)
     }
 
     #[cfg(feature = "with-ethers")]
@@ -114,8 +195,8 @@ impl core::fmt::Display for Amount {
         #[cfg(feature = "stylus")]
         use alloc::format;
 
-        let big_value = U256::from(self.0);
-        let big_scale = U256::from(Self::SCALE);
+        let big_value = convert_from_u128(self.0);
+        let big_scale = convert_from_u128(Self::SCALE);
 
         let integral = big_value / big_scale;
         let fraction = big_value % big_scale;

@@ -7,48 +7,55 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use alloy_primitives::{Address, U256, U64};
-use deli::vector::Vector;
+use deli::{amount::Amount, vector::Vector};
 use stylus_sdk::{
     prelude::*,
     storage::{StorageAddress, StorageBytes, StorageMap, StorageU64},
 };
 
-use crate::{filler::Filler, solver::Solver};
+use crate::{filler::Filler, quoter::Quoter, solver::Solver};
 
 pub mod filler;
+pub mod quoter;
 pub mod solver;
+
+// CT_QUOTE
+// - compute index prices and capacities
+pub const CT_QUOTE: u8 = 1;
 
 // CT_STRATEGY can be used to:
 // - compute index prices
 // - compute individual index asset values for collateral routing
 // - compute total asset quantities to send order for
 // - compute distribution coefficients for later fills
-pub const CT_STRATEGY: u8 = 1;
+pub const CT_STRATEGY: u8 = 2;
 
 // CT_FILL can be used to:
 // - compute filled assets redistribution between a set of index orders
-pub const CT_FILL: u8 = 2;
+pub const CT_FILL: u8 = 3;
 
 // Input / Output vectors required for solver computation
-pub const VT_PRICES: u8 = 1;
-pub const VT_LIQUID: u8 = 2;
-pub const VT_MATRIX: u8 = 3;
-pub const VT_COLLAT: u8 = 4;
-pub const VT_IAQTYS: u8 = 5;
-pub const VT_IAVALS: u8 = 6;
-pub const VT_IFILLS: u8 = 7;
-pub const VT_ASSETS: u8 = 8;
-pub const VT_COEFFS: u8 = 9;
-pub const VT_NETAVS: u8 = 10;
-pub const VT_QUOTES: u8 = 11;
-pub const VT_AXPXES: u8 = 12;
-pub const VT_AXFEES: u8 = 13;
-pub const VT_AXQTYS: u8 = 14;
-pub const VT_IXQTYS: u8 = 15;
-pub const VT_AAFEES: u8 = 16;
-pub const VT_AAQTYS: u8 = 17;
-pub const VT_CCOVRS: u8 = 18;
-pub const VT_ACOVRS: u8 = 19;
+pub const VT_PRICES: u8 = 1; // prices of individual assets
+pub const VT_LIQUID: u8 = 2; // liquidity of individual assets
+pub const VT_MATRIX: u8 = 3; // row major matrix of basket columns for individual index orders
+pub const VT_COLLAT: u8 = 4; // collateral for individual index orders
+pub const VT_IAQTYS: u8 = 5; // row major matrix of individual asset quantities
+pub const VT_IAVALS: u8 = 6; // row major matrix of individual asset values
+pub const VT_IFILLS: u8 = 7; // index fill rates
+pub const VT_ASSETS: u8 = 8; // optimised total asset quantities
+pub const VT_COEFFS: u8 = 9; // row major matrix of fitting coefficient columns for individual index orders
+pub const VT_NETAVS: u8 = 10; // net asset values (index prices)
+pub const VT_QUOTES: u8 = 11; // max possible index quantity (index capacity or fitted quantities for individual index orders)
+pub const VT_AXPXES: u8 = 12; // executed prices for exchange of individual assets
+pub const VT_AXFEES: u8 = 13; // fees paid for exchange of individual assets
+pub const VT_AXQTYS: u8 = 14; // total executed quantity of each asset
+pub const VT_IXQTYS: u8 = 15; // index quantities
+pub const VT_AAFEES: u8 = 16; // asset assigned fees to index order
+pub const VT_AAQTYS: u8 = 17; // asset assigned quantities to index order
+pub const VT_CCOVRS: u8 = 18; // collateral carry overs
+pub const VT_ACOVRS: u8 = 19; // asset carry overs
+pub const VT_SLOPES: u8 = 20; // price-quantity slopes for individual assets (for linear slippage)
+pub const VT_IXSLPS: u8 = 21; // index slope (aggregate linear slippage)
 
 #[storage]
 pub struct DisolveContext {
@@ -114,7 +121,19 @@ impl DisolveContext {
 
     pub fn compute(&mut self, context_type: U256) -> Result<Vec<u8>, Vec<u8>> {
         let ct = context_type.to::<u8>();
-        match ct {
+        let total_amount = match ct {
+            CT_QUOTE => {
+                let prices = Vector::from_vec(self.get_vector_internal(VT_PRICES));
+                let liquid = Vector::from_vec(self.get_vector_internal(VT_LIQUID));
+                let matrix = Vector::from_vec(self.get_vector_internal(VT_MATRIX));
+                let slopes = Vector::from_vec(self.get_vector_internal(VT_SLOPES));
+                let mut quoter = Quoter::new(prices, liquid, matrix, slopes);
+                let total_amount = quoter.quote();
+                self.set_vector_internal(VT_NETAVS, quoter.netavs.to_vec())?;
+                self.set_vector_internal(VT_IXSLPS, quoter.ixslps.to_vec())?;
+                self.set_vector_internal(VT_QUOTES, quoter.quotes.to_vec())?;
+                total_amount
+            }
             CT_STRATEGY => {
                 let prices = Vector::from_vec(self.get_vector_internal(VT_PRICES));
                 let liquid = Vector::from_vec(self.get_vector_internal(VT_LIQUID));
@@ -128,9 +147,7 @@ impl DisolveContext {
                 self.set_vector_internal(VT_COEFFS, solver.coeffs.to_vec())?;
                 self.set_vector_internal(VT_NETAVS, solver.netavs.to_vec())?;
                 self.set_vector_internal(VT_QUOTES, solver.quotes.to_vec())?;
-                let mut output = Vec::new();
-                total_amount.to_vec(&mut output);
-                Ok(output)
+                total_amount
             }
             CT_FILL => {
                 let prices = Vector::from_vec(self.get_vector_internal(VT_AXPXES));
@@ -149,12 +166,13 @@ impl DisolveContext {
                 self.set_vector_internal(VT_AAQTYS, filler.aaqtys.to_vec())?;
                 self.set_vector_internal(VT_CCOVRS, filler.ccovrs.to_vec())?;
                 self.set_vector_internal(VT_ACOVRS, filler.acovrs.to_vec())?;
-                let mut output = Vec::new();
-                total_amount.to_vec(&mut output);
-                Ok(output)
+                total_amount
             }
             _ => panic!("Invalid context type"),
-        }
+        };
+        let mut output = Vec::new();
+        total_amount.to_vec(&mut output);
+        Ok(output)
     }
 }
 

@@ -7,9 +7,9 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 
-use alloy_primitives::{Address, U256};
+use alloy_primitives::{Address, U128, U256};
 use alloy_sol_types::sol;
-use deli::{amount::Amount, asset::*, labels::Labels};
+use deli::{amount::Amount, asset::*, labels::Labels, math::solve_quadratic};
 use stylus_sdk::{
     prelude::*,
     storage::{StorageAddress, StorageBool, StorageBytes, StorageMap, StorageU128},
@@ -17,6 +17,15 @@ use stylus_sdk::{
 
 sol! {
     event NewIndexOrder(address sender);
+
+    event EngageIndexOrder(
+        address addressee,
+        uint128 engaged_amount);
+
+    event FillIndexOrder(
+        address addressee,
+        uint128 collateral_amount,
+        uint128 quantity_filled);
 }
 
 #[storage]
@@ -29,6 +38,9 @@ pub struct IndexOrder {
 
     /// Current amount of collateral in-progress
     collateral_engaged: StorageU128,
+
+    /// Total amount of index filled
+    quantity_filled: StorageU128,
 }
 
 impl IndexOrder {
@@ -38,6 +50,32 @@ impl IndexOrder {
             .checked_add(collateral_amount)
             .expect("Math overflow");
         self.collateral_amount.set(new_amount.to_u128());
+    }
+
+    fn engage(&mut self, collateral_amount: Amount) -> Amount {
+        let engaged = Amount::from_u128(self.collateral_engaged.get());
+        let remaining = self.get_remaining_amount();
+        let new_engagement = collateral_amount.min(remaining);
+        let new_engaged = engaged.checked_add(new_engagement).expect("Math overflow");
+        self.collateral_engaged.set(new_engaged.to_u128());
+        new_engagement
+    }
+
+    fn fill(&mut self, collateral_amount: Amount, quantity_filled: Amount) {
+        let spent = Amount::from_u128(self.collateral_spent.get());
+        let engaged = Amount::from_u128(self.collateral_engaged.get());
+        let total_quantity_filled = Amount::from_u128(self.quantity_filled.get());
+        let new_engaged = engaged
+            .checked_sub(collateral_amount)
+            .expect("Math underflow");
+        let new_spent = spent.checked_add(collateral_amount).expect("Math overflow");
+        let new_total_quantity_filled = total_quantity_filled
+            .checked_add(quantity_filled)
+            .expect("Math overflow");
+        self.collateral_engaged.set(new_engaged.to_u128());
+        self.collateral_spent.set(new_spent.to_u128());
+        self.quantity_filled
+            .set(new_total_quantity_filled.to_u128());
     }
 
     fn get_total_amount(&self) -> Amount {
@@ -73,6 +111,9 @@ pub struct Index {
     owner: StorageAddress,
     assets: StorageBytes,
     weights: StorageBytes,
+    capacity: StorageU128,
+    price: StorageU128,
+    slope: StorageU128,
     orders: StorageMap<Address, IndexOrder>,
 }
 
@@ -100,14 +141,102 @@ impl Index {
         self.active.get()
     }
 
+    fn is_owner(&self, address: Address) -> bool {
+        self.owner.get() == address
+    }
+
+    fn submit_quote(&mut self, capacity: Amount, price: Amount, slope: Amount) {
+        self.capacity.set(capacity.to_u128());
+        self.price.set(price.to_u128());
+        self.slope.set(slope.to_u128());
+    }
+
     fn submit_order(&mut self, sender: Address, collateral_amount: Amount) {
         let mut order = self.orders.setter(sender);
         order.submit_new(collateral_amount);
     }
 
+    fn engage_order(&mut self, sender: Address, collateral_amount: Amount) -> Amount {
+        let mut order = self.orders.setter(sender);
+        order.engage(collateral_amount)
+    }
+
+    fn fill_order(&mut self, sender: Address, collateral_amount: Amount, quantity_filled: Amount) {
+        let mut order = self.orders.setter(sender);
+        order.fill(collateral_amount, quantity_filled);
+    }
+
     fn get_order(&self, sender: Address) -> Amount {
         let order = self.orders.getter(sender);
         order.get_remaining_amount()
+    }
+
+    fn get_capacity(&self) -> Amount {
+        Amount::from_u128(self.capacity.get())
+    }
+
+    fn get_price(&self) -> Amount {
+        Amount::from_u128(self.price.get())
+    }
+
+    fn get_slope(&self) -> Amount {
+        Amount::from_u128(self.slope.get())
+    }
+
+    /// Tell quantity of index possible to obtain for given amount of collateral
+    /// and the amount of collateral that would be used to obtain such quantity.
+    /// Note that possible quantity is capped by index capacit, i.e. assets in
+    /// stock and market liquidity.
+    fn get_quote(&self, collateral_amount: Amount) -> Result<(Amount, Amount), Vec<u8>> {
+        let capacity = self.get_capacity();
+        let price = self.get_price();
+        let slope = self.get_slope();
+
+        // given:
+        //  C : given collateral
+        //  P : index price
+        //  S : index price slope
+        //
+        // the formula for the quantity possible for given collateral
+        //  Q = C / (P + S * Q)
+        //
+        // we can derive quadratic equation:
+        //  Q * (P + S * Q) = C
+        //  Q * (P + S * Q) - C = 0
+        //  Q * P + Q * S * Q - C = 0
+        //
+        // this is quadratic equation:
+        //  S * Q^2 + P * Q - C = 0
+        //
+        // where:
+        //  A = S : slope
+        //  B = P : index price
+        //  C = C : collateral amount
+        //
+        // solution:
+        //  Q = (-B + sqrt(B^2 + 4 * A * C)) / (2 * A)
+        //
+
+        let quote = solve_quadratic(slope, price, collateral_amount)
+            .ok_or_else(|| b"Failed to solve quadratic price equation")?;
+
+        if capacity.is_less_than(&quote) {
+            let slippage = slope
+                .checked_mul(capacity)
+                .ok_or_else(|| b"Failed to compute slippage")?;
+
+            let effective_price = price
+                .checked_add(slippage)
+                .ok_or_else(|| b"Failed to compute effective price")?;
+
+            let capped_collateral = capacity
+                .checked_mul(effective_price)
+                .ok_or_else(|| b"Failed to capped collateral")?;
+
+            Ok((capacity, capped_collateral))
+        } else {
+            Ok((quote, collateral_amount))
+        }
     }
 }
 
@@ -134,17 +263,107 @@ impl Dior {
         Ok(())
     }
 
-    pub fn submit_order(&mut self, index_id: U256, collateral_amount: U256) -> Result<(), Vec<u8>> {
+    pub fn submit_index_quote(
+        &mut self,
+        index_id: U256,
+        capacity: U128,
+        price: U128,
+        slope: U128,
+    ) -> Result<(), Vec<u8>> {
         let sender = self.vm().tx_origin();
         let mut index = self.indexes.setter(index_id);
         if !index.is_active() {
             Err(b"No such index")?;
         }
-        // TODO: ERC20Permit needed, for now just compute only
-        let collateral_amount =
-            Amount::try_from_u256(collateral_amount).ok_or_else(|| b"Invalid collateral amount")?;
-        index.submit_order(sender, collateral_amount);
+        if !index.is_owner(sender) {
+            Err(b"Unauthorised access")?;
+        }
+        index.submit_quote(
+            Amount::from_u128(capacity),
+            Amount::from_u128(price),
+            Amount::from_u128(slope),
+        );
+        Ok(())
+    }
+
+    pub fn get_quote(
+        &self,
+        index_id: U256,
+        collateral_amount: U128,
+    ) -> Result<(U128, U128), Vec<u8>> {
+        let index = self.indexes.getter(index_id);
+        if !index.is_active() {
+            Err(b"No such index")?;
+        }
+        let collateral_amount = Amount::from_u128(collateral_amount);
+        let (quote, collateral_used) = index.get_quote(collateral_amount)?;
+        Ok((quote.to_u128(), collateral_used.to_u128()))
+    }
+
+    pub fn submit_order(&mut self, index_id: U256, collateral_amount: U128) -> Result<(), Vec<u8>> {
+        let sender = self.vm().tx_origin();
+        let mut index = self.indexes.setter(index_id);
+        if !index.is_active() {
+            Err(b"No such index")?;
+        }
+        index.submit_order(sender, Amount::from_u128(collateral_amount));
         log(self.vm(), NewIndexOrder { sender });
+        Ok(())
+    }
+
+    pub fn engage_order(
+        &mut self,
+        index_id: U256,
+        addressee: Address,
+        collateral_amount: U128,
+    ) -> Result<(), Vec<u8>> {
+        let sender = self.vm().tx_origin();
+        let mut index = self.indexes.setter(index_id);
+        if !index.is_active() {
+            Err(b"No such index")?;
+        }
+        if !index.is_owner(sender) {
+            Err(b"Unauthorised access")?;
+        }
+        let engaged_amount = index.engage_order(addressee, Amount::from_u128(collateral_amount));
+        log(
+            self.vm(),
+            EngageIndexOrder {
+                addressee,
+                engaged_amount: engaged_amount.to_u128_raw(),
+            },
+        );
+        Ok(())
+    }
+
+    pub fn fill_order(
+        &mut self,
+        index_id: U256,
+        addressee: Address,
+        collateral_amount: U128,
+        quantity_filled: U128,
+    ) -> Result<(), Vec<u8>> {
+        let sender = self.vm().tx_origin();
+        let mut index = self.indexes.setter(index_id);
+        if !index.is_active() {
+            Err(b"No such index")?;
+        }
+        if !index.is_owner(sender) {
+            Err(b"Unauthorised access")?;
+        }
+        index.fill_order(
+            addressee,
+            Amount::from_u128(collateral_amount),
+            Amount::from_u128(quantity_filled),
+        );
+        log(
+            self.vm(),
+            FillIndexOrder {
+                addressee,
+                collateral_amount: collateral_amount.to::<u128>(),
+                quantity_filled: quantity_filled.to::<u128>(),
+            },
+        );
         Ok(())
     }
 
@@ -209,13 +428,13 @@ mod test {
         log_msg!("\nuser_1 submits order");
         vm.set_sender(USER_1);
         contract
-            .submit_order(index_id, Amount::from_u128_with_scale(150_00, 2).to_u256())
+            .submit_order(index_id, Amount::from_u128_with_scale(150_00, 2).to_u128())
             .unwrap();
 
         log_msg!("\nuser_2 submits order");
         vm.set_sender(USER_2);
         contract
-            .submit_order(index_id, Amount::from_u128_with_scale(150_00, 2).to_u256())
+            .submit_order(index_id, Amount::from_u128_with_scale(150_00, 2).to_u128())
             .unwrap();
 
         log_msg!("\nsolver collecting events...");
