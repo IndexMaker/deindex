@@ -71,12 +71,12 @@ impl Inventory {
 
 #[storage]
 #[entrypoint]
-pub struct Dimer {
+pub struct Dres {
     inventory: StorageMap<Address, Inventory>,
 }
 
 #[public]
-impl Dimer {
+impl Dres {
     pub fn submit_inventory(
         &mut self,
         assets: Vec<u8>,
@@ -259,7 +259,7 @@ mod test {
     fn test_dior() {
         use stylus_sdk::testing::*;
         let vm = TestVM::default();
-        let mut contract = Dimer::from(&vm);
+        let mut contract = Dres::from(&vm);
 
         let inventory_assets = Labels {
             data: vec![101, 102, 103, 104],
