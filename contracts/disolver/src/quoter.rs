@@ -87,7 +87,8 @@ impl Quoter {
                     continue;
                 }
                 let asset_value = asset_price.checked_mul(asset_weight).unwrap();
-                let asset_slippage = asset_slope.checked_mul(asset_weight).unwrap();
+                let asset_weight_sq = asset_weight.checked_sq().unwrap();
+                let asset_slippage = asset_slope.checked_mul(asset_weight_sq).unwrap();
                 let current_limit = asset_capacity_limit.checked_div(asset_weight).unwrap();
                 // - compute each index price, i.e. index_price[col] = sum(matrix[..,col] x prices[..])
                 // - compute index slope: index_slope[col] = sum(matrix[..,col] x slopes[..])

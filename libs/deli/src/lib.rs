@@ -7,5 +7,6 @@ pub mod amount;
 pub mod asset;
 pub mod labels;
 pub mod log;
+pub mod math;
 pub mod uint;
 pub mod vector;
