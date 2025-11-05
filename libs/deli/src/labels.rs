@@ -11,6 +11,18 @@ impl Labels {
         Self { data: Vec::new() }
     }
 
+    pub fn from_vec_u128(data: Vec<u128>) -> Self {
+        Self { data }
+    }
+
+    pub fn into_vec_u128(self) -> Vec<u128> {
+        self.data
+    }
+
+    pub fn to_vec_u128_cloned(self) -> Vec<u128> {
+        self.data.clone()
+    }
+
     pub fn from_vec(data: Vec<u8>) -> Self {
         let mut this = Self::new();
         let len = data.len();

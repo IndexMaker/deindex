@@ -11,6 +11,24 @@ impl Vector {
         Self { data: Vec::new() }
     }
 
+    pub fn from_vec_u128(data: Vec<u128>) -> Self {
+        let mut this = Self::new();
+        let len = data.len();
+        this.data.reserve(len);
+        for val in data {
+            this.data.push(Amount::from_u128_raw(val));
+        }
+        this
+    }
+
+    pub fn to_vec_u128(&self) -> Vec<u128> {
+        let mut res = Vec::new();
+        for val in &self.data {
+            res.push(val.to_u128_raw());
+        }
+        res
+    }
+
     pub fn from_vec(data: Vec<u8>) -> Self {
         let mut this = Self::new();
         let len = data.len();
@@ -72,7 +90,13 @@ impl core::fmt::Display for Vector {
                 let mut sepa = "";
 
                 for x in &self.data {
-                    write!(f, "{}{:0.max_scale_len$}", sepa, x, max_scale_len = max_scale_len)?;
+                    write!(
+                        f,
+                        "{}{:0.max_scale_len$}",
+                        sepa,
+                        x,
+                        max_scale_len = max_scale_len
+                    )?;
                     sepa = separator;
                 }
                 Ok(())
