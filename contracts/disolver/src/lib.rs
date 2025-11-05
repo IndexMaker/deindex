@@ -7,16 +7,17 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use alloy_primitives::{Address, U256, U64};
-use deli::{amount::Amount, vector::Vector};
+use deli::vector::Vector;
 use stylus_sdk::{
     prelude::*,
     storage::{StorageAddress, StorageBytes, StorageMap, StorageU64},
 };
 
-use crate::{filler::Filler, quoter::Quoter, solver::Solver};
+use crate::{filler::Filler, quoter::Quoter, single_order::SingleOrder, solver::Solver};
 
 pub mod filler;
 pub mod quoter;
+pub mod single_order;
 pub mod solver;
 
 // CT_QUOTE
@@ -33,6 +34,10 @@ pub const CT_STRATEGY: u8 = 2;
 // CT_FILL can be used to:
 // - compute filled assets redistribution between a set of index orders
 pub const CT_FILL: u8 = 3;
+
+// CT_SINGLE_ORDER can be used to:
+// - compute asset quantities for given index order
+pub const CT_SINGLE_ORDER: u8 = 4;
 
 // Input / Output vectors required for solver computation
 pub const VT_PRICES: u8 = 1; // prices of individual assets
@@ -166,6 +171,14 @@ impl DisolveContext {
                 self.set_vector_internal(VT_AAQTYS, filler.aaqtys.to_vec())?;
                 self.set_vector_internal(VT_CCOVRS, filler.ccovrs.to_vec())?;
                 self.set_vector_internal(VT_ACOVRS, filler.acovrs.to_vec())?;
+                total_amount
+            }
+            CT_SINGLE_ORDER => {
+                let matrix = Vector::from_vec(self.get_vector_internal(VT_MATRIX));
+                let quotes = Vector::from_vec(self.get_vector_internal(VT_QUOTES));
+                let mut solver = SingleOrder::new(matrix, quotes);
+                let total_amount = solver.compute();
+                self.set_vector_internal(VT_ASSETS, solver.assets.to_vec())?;
                 total_amount
             }
             _ => panic!("Invalid context type"),

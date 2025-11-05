@@ -9,6 +9,7 @@ members = [
     "contracts/dior",
     "contracts/disolver",
     "contracts/dres",
+    "contracts/dres2",
     "contracts/drip",
 
     # Library Packages
