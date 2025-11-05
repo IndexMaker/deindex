@@ -30,7 +30,7 @@ fn convert_from_u8(value: u8) -> U256 {
 /// Optimized integer square root for U256 using the Babylonian method.
 /// This method is gas-efficient, relying on quadratic convergence.
 /// It returns the floor of the square root.
-#[inline]
+#[cfg(feature = "amount-sqrt")]
 fn sqrt_u256(n: U256) -> Option<U256> {
     if n.is_zero() {
         return Some(U256::ZERO);
@@ -100,6 +100,7 @@ impl Amount {
         Some(Self(try_convert_to_u128(result)?))
     }
 
+    #[cfg(feature = "amount-sqrt")]
     pub fn checked_sqrt(self) -> Option<Self> {
         let result = sqrt_u256(self.to_u256())? * convert_from_u128(Self::SCALE_SQRT);
         Some(Self(try_convert_to_u128(result)?))
@@ -164,6 +165,7 @@ impl Amount {
         U128::from(self.0)
     }
 
+    #[inline]
     pub fn try_from_u256(value: U256) -> Option<Self> {
         Some(Self(try_convert_to_u128(value)?))
     }
@@ -179,11 +181,13 @@ impl Amount {
     }
 
     #[cfg(feature = "with-ethers")]
+    #[inline]
     pub fn try_from_u256_ethers(value: EthersU256) -> Option<Self> {
         Some(Self(value.try_into().ok()?))
     }
 
     #[cfg(feature = "with-ethers")]
+    #[inline]
     pub fn to_u256_ethers(&self) -> EthersU256 {
         EthersU256::from(self.0)
     }

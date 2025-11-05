@@ -2,10 +2,14 @@
 resolver = "2"
 members = [
     # Stylus Contract Packages
-    "contracts/disolver",
+    "contracts/daxos",
+    "contracts/decks",
     "contracts/decor",
+    "contracts/dion",
     "contracts/dior",
-    "contracts/dimer",
+    "contracts/disolver",
+    "contracts/dres",
+    "contracts/drip",
 
     # Library Packages
     "libs/deli",

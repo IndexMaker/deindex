@@ -1,8 +1,8 @@
 [package]
-name = "dimer"
+name = "dres"
 version = "0.1.0"
 edition = "2021"
-description = "Arbitrum Stylus Decentralised Inventory Manager"
+description = "Arbitrum Stylus Decentralised Liquidity Reserve Tracker (Inventory Manager)"
 
 [dependencies]
 alloy-primitives = { workspace = true }
