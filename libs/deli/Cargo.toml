@@ -17,6 +17,8 @@ stylus-sdk = { workspace = true, features = ["stylus-test"] }
 [features]
 default = []
 debug = []
+vec-u128 = []
+amount-sqrt = []
 stylus = ["stylus-sdk"]
 stylus-test = ["stylus", "debug"]
 with-ethers = ["ethers"]

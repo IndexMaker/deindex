@@ -11,6 +11,7 @@ impl Vector {
         Self { data: Vec::new() }
     }
 
+    #[cfg(feature = "vec-u128")]
     pub fn from_vec_u128(data: Vec<u128>) -> Self {
         let mut this = Self::new();
         let len = data.len();
@@ -21,6 +22,7 @@ impl Vector {
         this
     }
 
+    #[cfg(feature = "vec-u128")]
     pub fn to_vec_u128(&self) -> Vec<u128> {
         let mut res = Vec::new();
         for val in &self.data {

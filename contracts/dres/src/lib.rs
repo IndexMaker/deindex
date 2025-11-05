@@ -7,11 +7,11 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 
-use alloy_primitives::{Address, U128, U256};
+use alloy_primitives::{Address, U256};
 use alloy_sol_types::sol;
 use stylus_sdk::{
     prelude::*,
-    storage::{StorageBool, StorageBytes, StorageMap, StorageU128},
+    storage::{StorageBool, StorageBytes, StorageMap},
 };
 
 use deli::{amount::Amount, asset::*, labels::Labels, vector::Vector};

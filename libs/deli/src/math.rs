@@ -9,7 +9,7 @@ use crate::amount::Amount;
 /// NOTE: We are solving quadratic equation with negative term `- C`, which is
 /// why in the root solution there is `+` in the part under radical `B^2 + 4 A C`.
 /// 
-#[inline]
+#[cfg(feature = "amount-sqrt")]
 pub fn solve_quadratic(a: Amount, b: Amount, negative_c: Amount) -> Option<Amount> {
     let b_squared = b.checked_sq()?;
     let ac = a.checked_mul(negative_c)?;

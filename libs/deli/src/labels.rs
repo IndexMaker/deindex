@@ -11,14 +11,17 @@ impl Labels {
         Self { data: Vec::new() }
     }
 
+    #[cfg(feature = "vec-u128")]
     pub fn from_vec_u128(data: Vec<u128>) -> Self {
         Self { data }
     }
 
+    #[cfg(feature = "vec-u128")]
     pub fn into_vec_u128(self) -> Vec<u128> {
         self.data
     }
 
+    #[cfg(feature = "vec-u128")]
     pub fn to_vec_u128_cloned(self) -> Vec<u128> {
         self.data.clone()
     }

@@ -9,10 +9,10 @@ use alloc::vec::Vec;
 
 use alloy_primitives::{Address, U128, U256};
 use alloy_sol_types::sol;
-use deli::{amount::Amount, asset::*, labels::Labels, math::solve_quadratic};
+use deli::amount::Amount;
 use stylus_sdk::{
     prelude::*,
-    storage::{StorageAddress, StorageBool, StorageBytes, StorageMap, StorageU128},
+    storage::{StorageAddress, StorageBool, StorageMap, StorageU128},
 };
 
 sol! {
