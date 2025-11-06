@@ -323,7 +323,7 @@ impl Dres {
     pub fn get_inventory(
         &self,
         assets_bytes: Vec<u8>,
-    ) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>), Vec<u8>> {
+    ) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>), Vec<u8>> {
         let assets = Labels::from_vec(assets_bytes);
 
         check_assets_sorted(&assets)?;
@@ -340,6 +340,9 @@ impl Dres {
         let mut inventory_prices = Vector::from_vec(self.prices.get_bytes());
         let mut inventory_liquidity = Vector::from_vec(self.liquidity.get_bytes());
         let mut inventory_slopes = Vector::from_vec(self.slopes.get_bytes());
+        let mut inventory_volleys = Vector::new();
+
+        let mut total_volley_calc = VolleySizeCalc::new();
 
         merge_join(
             &assets,
@@ -368,6 +371,7 @@ impl Dres {
                         .data
                         .insert(inventory_index, Amount::ZERO);
                     inventory_slopes.data.insert(inventory_index, Amount::ZERO);
+                    inventory_volleys.data.push(Amount::ZERO);
                     // inventory_index remains unchanged, we'll match next
                     // incoming asset against that inventory asset.
                     Ok(false)
@@ -377,12 +381,20 @@ impl Dres {
                     inventory_prices.data.push(Amount::ZERO);
                     inventory_liquidity.data.push(Amount::ZERO);
                     inventory_slopes.data.insert(inventory_index, Amount::ZERO);
+                    inventory_volleys.data.push(Amount::ZERO);
                     Ok(true)
                 }
                 MergeJoinBranch::Matched => {
                     // asset on the list and in the inventory, we can continue
                     // as positions are already there in the state we want to
                     // return them.
+                    let volley_size = total_volley_calc.update_total_volley(
+                        get_side(inventory_assets.data[inventory_index]),
+                        inventory_positions.data[inventory_index],
+                        inventory_prices.data[inventory_index],
+                        inventory_slopes.data[inventory_index],
+                    )?;
+                    inventory_volleys.data.push(volley_size);
                     Ok(true)
                 }
             },
@@ -393,6 +405,7 @@ impl Dres {
             inventory_prices.to_vec(),
             inventory_liquidity.to_vec(),
             inventory_slopes.to_vec(),
+            inventory_volleys.to_vec(),
         ))
     }
 
@@ -460,7 +473,6 @@ impl Dres {
 
                         let order_side = get_side(order_asset);
                         let order_quantity = order_quantities.data[order_index];
-
 
                         //
                         // Calculate executed price
@@ -605,7 +617,7 @@ mod test {
         let _emitted_logs = vm.get_emitted_logs();
 
         let mut total_positions = BTreeMap::new();
-        let (positions, _prices, _liquidity, _slopes) =
+        let (positions, _prices, _liquidity, _slopes, _volleys) =
             contract.get_inventory(inventory_assets.to_vec()).unwrap();
         let positions = Vector::from_vec(positions);
         for i in 0..inventory_assets.data.len() {
