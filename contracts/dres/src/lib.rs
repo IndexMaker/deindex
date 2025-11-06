@@ -7,157 +7,305 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 
-use alloy_primitives::{Address, U256};
+use alloy_primitives::{U128, U256};
 use alloy_sol_types::sol;
 use stylus_sdk::{
     prelude::*,
-    storage::{StorageBool, StorageBytes, StorageMap},
+    storage::{StorageBytes, StorageU128},
 };
 
 use deli::{amount::Amount, asset::*, labels::Labels, vector::Vector};
 
 sol! {
     // event allows us to know suppliers joining us
-    event NewInventory(address supplier);
+    event NewInventory(uint8[] assets);
 
     // event allows us to know executed orders against suppliers
-    event InventoryMatched(address supplier, uint256 order_id);
+    event InventoryMatched(uint256 order_id, uint8[] assets);
+}
+
+fn check_assets_sorted(assets: &Labels) -> Result<(), Vec<u8>> {
+    if !assets.data.is_sorted_by_key(|x| get_asset_id(*x)) {
+        Err(b"Assets must be sorted")?;
+    }
+    Ok(())
+}
+
+fn check_assets_aligned(assets: &Labels, vector: &Vector) -> Result<(), Vec<u8>> {
+    if assets.data.len() != vector.data.len() {
+        Err(b"Assets must be aligned with data")?;
+    }
+    Ok(())
+}
+
+fn compute_effective_price(
+    side: u128,
+    quantity: Amount,
+    price: Amount,
+    slope: Amount,
+) -> Result<Amount, Vec<u8>> {
+    let slippage = quantity
+        .checked_mul(slope)
+        .unwrap()
+        .checked_mul(price)
+        .unwrap();
+
+    let effective_price = match side {
+        SIDE_LONG => price.checked_add(slippage).unwrap(),
+        SIDE_SHORT => price.checked_sub(slippage).unwrap(),
+        _ => Err(b"Invalid side")?,
+    };
+    Ok(effective_price)
+}
+
+fn compute_effective_position_and_side(
+    order_side: u128,
+    order_quantity: Amount,
+    inventory_side: u128,
+    inventory_position: Amount,
+) -> Result<(Amount, u128), Vec<u8>> {
+    let (new_inventory_position, new_inventory_side) = {
+        if inventory_side == SIDE_FLAT {
+            (order_quantity, order_side)
+        } else if order_side == inventory_side {
+            // we're matching on same side - we're extending position
+            (
+                inventory_position
+                    .checked_add(order_quantity)
+                    .ok_or_else(|| b"Position addition overflow")?,
+                inventory_side,
+            )
+        } else if inventory_position.is_less_than(&order_quantity) {
+            // we're flipping positon
+            (
+                order_quantity
+                    .checked_sub(inventory_position)
+                    .ok_or_else(|| b"Position flip calculation error".to_vec())?,
+                order_side, //< it's opposite by virtue if we're here
+            )
+        } else {
+            // we're reducing position
+            let new_pos = inventory_position
+                .checked_sub(order_quantity)
+                .ok_or_else(|| b"Position subtraction underflow".to_vec())?;
+
+            if new_pos.is_not() {
+                (Amount::ZERO, SIDE_FLAT)
+            } else {
+                (new_pos, inventory_side)
+            }
+        }
+    };
+    Ok((new_inventory_position, new_inventory_side))
+}
+
+struct VolleySizeCalc {
+    total_volley_size: Amount,
+}
+
+impl VolleySizeCalc {
+    fn new() -> Self {
+        Self {
+            total_volley_size: Amount::ZERO,
+        }
+    }
+
+    fn update_total_volley(
+        &mut self,
+        side: u128,
+        position: Amount,
+        price: Amount,
+        slope: Amount,
+    ) -> Result<Amount, Vec<u8>> {
+        let inventory_asset_volley_price = compute_effective_price(side, position, price, slope)?;
+
+        let inventory_asset_volley_size =
+            position.checked_mul(inventory_asset_volley_price).unwrap();
+
+        self.total_volley_size = self
+            .total_volley_size
+            .checked_add(inventory_asset_volley_size)
+            .unwrap();
+
+        Ok(inventory_asset_volley_size)
+    }
+}
+
+fn merge_join<FSkipInventory, FSkipAsset, FMatched>(
+    assets: &Labels,
+    inventory_assets: &Labels,
+    mut skip_inventory: FSkipInventory,
+    mut skip_asset: FSkipAsset,
+    mut matched: FMatched,
+) where
+    FSkipInventory: FnMut(usize, usize) -> bool,
+    FSkipAsset: FnMut(usize, usize) -> bool,
+    FMatched: FnMut(usize, usize),
+{
+    let mut inventory_index = 0;
+    for asset_index in 0..assets.data.len() {
+        let asset = assets.data[asset_index]; // asset_id + side
+        let asset_id = get_asset_id(asset);
+
+        let mut inventory_updated = false;
+        while inventory_index < inventory_assets.data.len() {
+            let inventory_asset = inventory_assets.data[inventory_index];
+            let inventory_asset_id = get_asset_id(inventory_asset);
+
+            if inventory_asset_id < asset_id {
+                if skip_inventory(asset_index, inventory_index) {
+                    inventory_index += 1;
+                }
+                continue;
+            } else if inventory_asset_id > asset_id {
+                if skip_asset(asset_index, inventory_index) {
+                    inventory_index += 1;
+                }
+                inventory_updated = true;
+                break;
+            } else {
+                matched(asset_index, inventory_index);
+                inventory_updated = true;
+            }
+        }
+
+        if !inventory_updated {
+            skip_inventory(asset_index, inventory_index);
+        }
+    }
 }
 
 #[storage]
-pub struct Inventory {
-    active: StorageBool,
+#[entrypoint]
+pub struct Dres {
     assets: StorageBytes, // labels identifying assets (Vec<u128> encoded as Vec<u8>)
     positions: StorageBytes, // quantity of each asset (Vec<Amount> encoded as Vec<u8>)
     prices: StorageBytes, // volume weighted mid-point price (Vec<Amount> encoded as Vec<u8>)
     liquidity: StorageBytes, // total liquidity available (Vec<Amount> encoded as Vec<u8>)
     slopes: StorageBytes, // price liquidity slope (Vec<Amount> encoded as Vec<u8>)
+    // --
+    max_asset_volley: StorageU128,
+    max_total_volley: StorageU128,
 }
 
-impl Inventory {
-    pub fn init(&mut self) {
-        self.active.set(true);
+#[public]
+impl Dres {
+    pub fn set_thresholds(&mut self, max_asset_volley: U128, max_total_volley: U128) {
+        self.max_asset_volley.set(max_asset_volley);
+        self.max_total_volley.set(max_total_volley);
     }
 
-    fn is_active(&self) -> bool {
-        self.active.get()
-    }
-
-    fn check_assets_sorted(assets: &Labels) -> Result<(), Vec<u8>> {
-        if !assets.data.is_sorted_by_key(|x| get_asset_id(*x)) {
-            Err(b"Assets must be sorted")?;
-        }
-        Ok(())
-    }
-
-    fn check_assets_aligned(assets: &Labels, vector: &Vector) -> Result<(), Vec<u8>> {
-        if assets.data.len() != vector.data.len() {
-            Err(b"Assets must be aligned with data")?;
-        }
-        Ok(())
-    }
-
-    fn submit(
+    pub fn submit_inventory(
         &mut self,
-        assets: Labels,
-        positions: Vector,
-        prices: Vector,
-        liquidity: Vector,
-        slopes: Vector,
+        assets_bytes: Vec<u8>,
+        positions_bytes: Vec<u8>,
+        prices_bytes: Vec<u8>,
+        liquidity_bytes: Vec<u8>,
+        slopes_bytes: Vec<u8>,
     ) -> Result<(), Vec<u8>> {
-        Self::check_assets_sorted(&assets)?;
+        let _supplier = self.vm().tx_origin();
 
-        if !self.active.get() {
-            self.active.set(true);
-            self.assets.set_bytes(assets.to_vec());
-            self.positions.set_bytes(positions.to_vec());
-            self.prices.set_bytes(prices.to_vec());
-            self.liquidity.set_bytes(liquidity.to_vec());
-            self.slopes.set_bytes(slopes.to_vec());
-        } else {
-            // merge inventory
-            let mut inventory_assets = Labels::from_vec(self.assets.get_bytes());
-            let mut inventory_positions = Vector::from_vec(self.positions.get_bytes());
-            let mut inventory_prices = Vector::from_vec(self.prices.get_bytes());
-            let mut inventory_liquidity = Vector::from_vec(self.liquidity.get_bytes());
-            let mut inventory_slopes = Vector::from_vec(self.slopes.get_bytes());
+        let assets = Labels::from_vec(assets_bytes);
+        let positions = Vector::from_vec(positions_bytes);
+        let prices = Vector::from_vec(prices_bytes);
+        let liquidity = Vector::from_vec(liquidity_bytes);
+        let slopes = Vector::from_vec(slopes_bytes);
 
-            let mut inventory_index = 0;
-            for asset_index in 0..assets.data.len() {
-                let asset = assets.data[asset_index]; // asset_id + side
-                let asset_id = get_asset_id(asset);
+        check_assets_sorted(&assets)?;
 
-                let mut inventory_updated = false;
-                while inventory_index < inventory_assets.data.len() {
-                    let inventory_asset = inventory_assets.data[inventory_index];
-                    let inventory_asset_id = get_asset_id(inventory_asset);
+        // merge inventory
+        let mut inventory_assets = Labels::from_vec(self.assets.get_bytes());
+        let mut inventory_positions = Vector::from_vec(self.positions.get_bytes());
+        let mut inventory_prices = Vector::from_vec(self.prices.get_bytes());
+        let mut inventory_liquidity = Vector::from_vec(self.liquidity.get_bytes());
+        let mut inventory_slopes = Vector::from_vec(self.slopes.get_bytes());
 
-                    if inventory_asset_id < asset_id {
-                        // go to next inventory asset and match with same
-                        // incoming asset...
-                        inventory_index += 1;
-                        continue;
-                    } else if inventory_asset_id > asset_id {
-                        // if this is new entry, then we insert before
-                        // inventory_index, and we keep same side as incoming
-                        // asset
-                        // NOTE: here in submit() we are adding new assets,
-                        // because supplier is telling us they got new assets
-                        // either in stock or available on market.
-                        inventory_assets.data.insert(inventory_index, asset);
-                        inventory_positions
-                            .data
-                            .insert(inventory_index, positions.data[asset_index]);
-                        inventory_prices
-                            .data
-                            .insert(inventory_index, prices.data[asset_index]);
-                        inventory_liquidity
-                            .data
-                            .insert(inventory_index, liquidity.data[asset_index]);
-                        inventory_slopes
-                            .data
-                            .insert(inventory_index, slopes.data[asset_index]);
-                        // go to next incoming asset and match with current
-                        // inventory asset...
-                        inventory_updated = true;
-                        inventory_index += 1; // current inventory asset shifted by one
-                        break;
-                    } else {
-                        // if asset exists in current inventory, then we
-                        // overwrite with incoming asset
-                        // NOTE: here in submit() we OVERWRITE and NOT UPDATE,
-                        // because supplier is telling us new values and not
-                        // deltas.
-                        inventory_assets.data[inventory_index] = asset;
-                        inventory_positions.data[inventory_index] = positions.data[asset_index];
-                        inventory_prices.data[inventory_index] = prices.data[asset_index];
-                        inventory_liquidity.data[inventory_index] = liquidity.data[asset_index];
-                        inventory_slopes.data[inventory_index] = slopes.data[asset_index];
-                        // go to next incoming asset and match with next
-                        // inventory asset...
-                        inventory_updated = true;
-                        inventory_index += 1;
-                        break;
-                    }
+        let mut inventory_index = 0;
+        for asset_index in 0..assets.data.len() {
+            let asset = assets.data[asset_index]; // asset_id + side
+            let asset_id = get_asset_id(asset);
+
+            let mut inventory_updated = false;
+            while inventory_index < inventory_assets.data.len() {
+                let inventory_asset = inventory_assets.data[inventory_index];
+                let inventory_asset_id = get_asset_id(inventory_asset);
+
+                if inventory_asset_id < asset_id {
+                    // go to next inventory asset and match with same
+                    // incoming asset...
+                    inventory_index += 1;
+                    continue;
+                } else if inventory_asset_id > asset_id {
+                    // if this is new entry, then we insert before
+                    // inventory_index, and we keep same side as incoming
+                    // asset
+                    // NOTE: here in submit() we are adding new assets,
+                    // because supplier is telling us they got new assets
+                    // either in stock or available on market.
+                    inventory_assets.data.insert(inventory_index, asset);
+                    inventory_positions
+                        .data
+                        .insert(inventory_index, positions.data[asset_index]);
+                    inventory_prices
+                        .data
+                        .insert(inventory_index, prices.data[asset_index]);
+                    inventory_liquidity
+                        .data
+                        .insert(inventory_index, liquidity.data[asset_index]);
+                    inventory_slopes
+                        .data
+                        .insert(inventory_index, slopes.data[asset_index]);
+                    // go to next incoming asset and match with current
+                    // inventory asset...
+                    inventory_updated = true;
+                    inventory_index += 1; // current inventory asset shifted by one
+                    break;
+                } else {
+                    // if asset exists in current inventory, then we
+                    // overwrite with incoming asset
+                    // NOTE: here in submit() we OVERWRITE and NOT UPDATE,
+                    // because supplier is telling us new values and not
+                    // deltas.
+                    inventory_assets.data[inventory_index] = asset;
+                    inventory_positions.data[inventory_index] = positions.data[asset_index];
+                    inventory_prices.data[inventory_index] = prices.data[asset_index];
+                    inventory_liquidity.data[inventory_index] = liquidity.data[asset_index];
+                    inventory_slopes.data[inventory_index] = slopes.data[asset_index];
+                    // go to next incoming asset and match with next
+                    // inventory asset...
+                    inventory_updated = true;
+                    inventory_index += 1;
+                    break;
                 }
+            }
 
-                if !inventory_updated {
-                    // asset not found in inventory, and sorts after last
-                    // inventory asset
-                    inventory_assets.data.push(asset);
-                    inventory_positions.data.push(positions.data[asset_index]);
-                    inventory_prices.data.push(prices.data[asset_index]);
-                    inventory_liquidity.data.push(liquidity.data[asset_index]);
-                    inventory_slopes.data.push(slopes.data[asset_index]);
-                }
+            if !inventory_updated {
+                // asset not found in inventory, and sorts after last
+                // inventory asset
+                inventory_assets.data.push(asset);
+                inventory_positions.data.push(positions.data[asset_index]);
+                inventory_prices.data.push(prices.data[asset_index]);
+                inventory_liquidity.data.push(liquidity.data[asset_index]);
+                inventory_slopes.data.push(slopes.data[asset_index]);
             }
         }
 
+        log(
+            self.vm(),
+            NewInventory {
+                assets: assets.to_vec(),
+            },
+        );
         Ok(())
     }
 
-    fn get_inventory(&self, assets: Labels) -> Result<(Vector, Vector, Vector, Vector), Vec<u8>> {
-        Self::check_assets_sorted(&assets)?;
+    pub fn get_inventory(
+        &self,
+        assets_bytes: Vec<u8>,
+    ) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>), Vec<u8>> {
+        let assets = Labels::from_vec(assets_bytes);
+
+        check_assets_sorted(&assets)?;
 
         let mut inventory_assets = Labels::from_vec(self.assets.get_bytes());
         let mut inventory_positions = Vector::from_vec(self.positions.get_bytes());
@@ -224,31 +372,40 @@ impl Inventory {
         inventory_slopes.data.resize(inventory_index, Amount::ZERO);
 
         Ok((
-            inventory_positions,
-            inventory_prices,
-            inventory_liquidity,
-            inventory_slopes,
+            inventory_positions.to_vec(),
+            inventory_prices.to_vec(),
+            inventory_liquidity.to_vec(),
+            inventory_slopes.to_vec(),
         ))
     }
 
     pub fn match_inventory(
         &mut self,
+        order_id: U256,
         order_type: u8,
-        order_assets: Labels,
-        order_quantities: Vector,
-    ) -> Result<(Vector, Vector), Vec<u8>> {
+        assets_bytes: Vec<u8>,
+        quantities_bytes: Vec<u8>,
+    ) -> Result<(Vec<u8>, Vec<u8>), Vec<u8>> {
+        let order_assets = Labels::from_vec(assets_bytes);
+        let order_quantities = Vector::from_vec(quantities_bytes);
+
         if order_type != 0 {
             Err(b"Unsupported order type")?;
         }
 
-        Self::check_assets_sorted(&order_assets)?;
-        Self::check_assets_aligned(&order_assets, &order_quantities)?;
+        check_assets_sorted(&order_assets)?;
+        check_assets_aligned(&order_assets, &order_quantities)?;
 
         let mut inventory_assets = Labels::from_vec(self.assets.get_bytes());
         let mut inventory_positions = Vector::from_vec(self.positions.get_bytes());
 
         let inventory_prices = Vector::from_vec(self.prices.get_bytes());
         let inventory_slopes = Vector::from_vec(self.slopes.get_bytes());
+
+        let max_asset_volley = Amount::from_u128(self.max_asset_volley.get());
+        let max_total_volley = Amount::from_u128(self.max_total_volley.get());
+
+        let mut total_volley_calc = VolleySizeCalc::new();
 
         let mut executed_prices = Vector::new();
         let mut executed_quantities = Vector::new();
@@ -292,57 +449,47 @@ impl Inventory {
                     Err(b"Missing inventory position for asset")?;
                 } else {
                     assert_eq!(asset_id, order_asset_id);
-                    // compute excuted price using volume weighted approximation
+
+                    //
+                    // Calculate executed price
+                    //
+
                     let price = inventory_prices.data[inventory_index];
                     let slope = inventory_slopes.data[inventory_index];
-                    let slippage = order_quantity
-                        .checked_mul(slope)
-                        .unwrap()
-                        .checked_mul(price)
-                        .unwrap();
 
-                    let executed_price = match order_side {
-                        SIDE_LONG => price.checked_add(slippage).unwrap(),
-                        SIDE_SHORT => price.checked_sub(slippage).unwrap(),
-                        _ => Err(b"Invalid order side in batch")?,
-                    };
+                    let executed_price =
+                        compute_effective_price(order_side, order_quantity, price, slope)?;
 
-                    // compute executed quantity and new inventory position
-                    let inventory_position = inventory_positions.data[inventory_index];
-                    let inventory_side = get_side(inventory_asset);
+                    //
+                    // Calculate position resulting from matching
+                    //
 
-                    let (new_inventory_position, new_inventory_side) = {
-                        if inventory_side == SIDE_FLAT {
-                            (order_quantity, order_side)
-                        } else if order_side == inventory_side {
-                            // we're matching on same side - we're extending position
-                            (
-                                inventory_position
-                                    .checked_add(order_quantity)
-                                    .ok_or_else(|| b"Position addition overflow")?,
-                                inventory_side,
-                            )
-                        } else if inventory_position.is_less_than(&order_quantity) {
-                            // we're flipping positon
-                            (
-                                order_quantity
-                                    .checked_sub(inventory_position)
-                                    .ok_or_else(|| b"Position flip calculation error".to_vec())?,
-                                order_side, //< it's opposite by virtue if we're here
-                            )
-                        } else {
-                            // we're reducing position
-                            let new_pos = inventory_position
-                                .checked_sub(order_quantity)
-                                .ok_or_else(|| b"Position subtraction underflow".to_vec())?;
+                    let (new_inventory_position, new_inventory_side) =
+                        compute_effective_position_and_side(
+                            order_side,
+                            order_quantity,
+                            get_side(inventory_asset),
+                            inventory_positions.data[inventory_index],
+                        )?;
 
-                            if new_pos.is_not() {
-                                (Amount::ZERO, SIDE_FLAT)
-                            } else {
-                                (new_pos, inventory_side)
-                            }
-                        }
-                    };
+                    //
+                    // Calcualte how deep is the volley to apply limits
+                    //
+
+                    let inventory_asset_volley_size = total_volley_calc.update_total_volley(
+                        new_inventory_side,
+                        new_inventory_position,
+                        price,
+                        slope,
+                    )?;
+
+                    if max_asset_volley.is_less_than(&inventory_asset_volley_size) {
+                        Err(b"Max asset volley size reached")?;
+                    }
+
+                    if max_total_volley.is_less_than(&total_volley_calc.total_volley_size) {
+                        Err(b"Max total volley size reached")?;
+                    }
 
                     executed_prices.data[order_index] = executed_price;
                     executed_quantities.data[order_index] = order_quantity;
@@ -357,90 +504,14 @@ impl Inventory {
         self.assets.set_bytes(inventory_assets.to_vec());
         self.positions.set_bytes(inventory_positions.to_vec());
 
-        Ok((executed_prices, executed_quantities))
-    }
-}
+        log(
+            self.vm(),
+            InventoryMatched {
+                order_id,
+                assets: order_assets.to_vec(),
+            },
+        );
 
-#[storage]
-#[entrypoint]
-pub struct Dres {
-    inventory: StorageMap<Address, Inventory>,
-}
-
-#[public]
-impl Dres {
-    pub fn create_inventory(&mut self) -> Result<(), Vec<u8>> {
-        let supplier = self.vm().tx_origin();
-        let mut inventory = self.inventory.setter(supplier);
-        if inventory.is_active() {
-            Err(b"Inventory already exists")?;
-        }
-        inventory.init();
-        Ok(())
-    }
-
-    pub fn submit_inventory(
-        &mut self,
-        assets_bytes: Vec<u8>,
-        positions_bytes: Vec<u8>,
-        prices_bytes: Vec<u8>,
-        liquidity_bytes: Vec<u8>,
-        slopes_bytes: Vec<u8>,
-    ) -> Result<(), Vec<u8>> {
-        let supplier = self.vm().tx_origin();
-        let mut inventory = self.inventory.setter(supplier);
-        if !inventory.is_active() {
-            Err(b"No such supplier")?;
-        }
-        let assets = Labels::from_vec(assets_bytes);
-        let positions = Vector::from_vec(positions_bytes);
-        let prices = Vector::from_vec(prices_bytes);
-        let liquidity = Vector::from_vec(liquidity_bytes);
-        let slopes = Vector::from_vec(slopes_bytes);
-        inventory.submit(assets, positions, prices, liquidity, slopes)?;
-        log(self.vm(), NewInventory { supplier });
-        Ok(())
-    }
-
-    pub fn get_inventory(
-        &self,
-        supplier: Address,
-        assets_bytes: Vec<u8>,
-    ) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>), Vec<u8>> {
-        let inventory = self.inventory.getter(supplier);
-        if !inventory.is_active() {
-            Err(b"No such supplier")?;
-        }
-        let assets = Labels::from_vec(assets_bytes);
-        let (positions, prices, liquidity, slopes) = inventory.get_inventory(assets)?;
-        Ok((
-            positions.to_vec(),
-            prices.to_vec(),
-            liquidity.to_vec(),
-            slopes.to_vec(),
-        ))
-    }
-
-    pub fn match_inventory(
-        &mut self,
-        supplier: Address,
-        order_id: U256,
-        order_type: u8,
-        assets_bytes: Vec<u8>,
-        quantities_bytes: Vec<u8>,
-    ) -> Result<(Vec<u8>, Vec<u8>), Vec<u8>> {
-        let mut inventory = self.inventory.setter(supplier);
-        if !inventory.is_active() {
-            Err(b"Supplier not active")?;
-        }
-
-        let assets = Labels::from_vec(assets_bytes);
-        let quantities = Vector::from_vec(quantities_bytes);
-
-        let (executed_prices, executed_quantities) =
-            inventory.match_inventory(order_type, assets, quantities)?;
-
-        log(self.vm(), InventoryMatched { supplier, order_id });
         Ok((executed_prices.to_vec(), executed_quantities.to_vec()))
     }
 }
@@ -449,8 +520,7 @@ impl Dres {
 mod test {
     use std::collections::BTreeMap;
 
-    use alloy_primitives::address;
-    use alloy_sol_types::SolEvent;
+    use alloy_primitives::{address, Address};
     use deli::{amount::Amount, labels::Labels, log_msg, vector::Vector};
 
     use super::*;
@@ -518,33 +588,21 @@ mod test {
 
         log_msg!("\nsolver collecting events...");
         vm.set_sender(SOLVER);
-        let emitted_logs = vm.get_emitted_logs();
-
-        let suppliers: Vec<_> = emitted_logs
-            .iter()
-            .filter_map(|(topics, data)| {
-                let inventory = NewInventory::decode_raw_log(topics, data, true);
-                inventory.ok()
-            })
-            .map(|inventory| inventory.supplier)
-            .collect();
+        let _emitted_logs = vm.get_emitted_logs();
 
         let mut total_positions = BTreeMap::new();
-        for supplier in suppliers {
-            let (positions, _prices, _liquidity, _slopes) = contract
-                .get_inventory(supplier, inventory_assets.to_vec())
-                .unwrap();
-            let positions = Vector::from_vec(positions);
-            for i in 0..inventory_assets.data.len() {
-                let asset = inventory_assets.data[i];
-                let position = positions.data[i];
-                let entry = total_positions.entry(asset);
-                entry
-                    .and_modify(|q: &mut Amount| {
-                        *q = q.checked_add(position).unwrap();
-                    })
-                    .or_insert(position);
-            }
+        let (positions, _prices, _liquidity, _slopes) =
+            contract.get_inventory(inventory_assets.to_vec()).unwrap();
+        let positions = Vector::from_vec(positions);
+        for i in 0..inventory_assets.data.len() {
+            let asset = inventory_assets.data[i];
+            let position = positions.data[i];
+            let entry = total_positions.entry(asset);
+            entry
+                .and_modify(|q: &mut Amount| {
+                    *q = q.checked_add(position).unwrap();
+                })
+                .or_insert(position);
         }
         log_msg!("\ninventory:");
         for (asset, position) in total_positions {

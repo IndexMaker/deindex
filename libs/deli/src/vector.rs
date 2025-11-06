@@ -31,7 +31,7 @@ impl Vector {
         res
     }
 
-    #[cfg(not(feature = "no-vec-u8"))]
+    #[cfg(feature = "vec-u8")]
     pub fn from_vec(data: Vec<u8>) -> Self {
         let mut this = Self::new();
         let len = data.len();
@@ -52,7 +52,7 @@ impl Vector {
         this
     }
 
-    #[cfg(not(feature = "no-vec-u8"))]
+    #[cfg(feature = "vec-u8")]
     pub fn to_vec(&self) -> Vec<u8> {
         let mut output = Vec::new();
         for val in &self.data {
