@@ -131,48 +131,87 @@ impl VolleySizeCalc {
     }
 }
 
-fn merge_join<FSkipInventory, FSkipAsset, FMatched>(
+enum MergeJoinBranch {
+    SkipInventoryInner,
+    SkipAssetOuter,
+    SkipAssetInner,
+    Matched,
+}
+
+fn merge_join<FMatcher>(
     assets: &Labels,
-    inventory_assets: &Labels,
-    mut skip_inventory: FSkipInventory,
-    mut skip_asset: FSkipAsset,
-    mut matched: FMatched,
-) where
-    FSkipInventory: FnMut(usize, usize) -> bool,
-    FSkipAsset: FnMut(usize, usize) -> bool,
-    FMatched: FnMut(usize, usize),
+    inventory_assets: &mut Labels,
+    mut f_matcher: FMatcher,
+) -> Result<(), Vec<u8>>
+where
+    FMatcher:
+        FnMut(u128, u128, usize, usize, &mut Labels, MergeJoinBranch) -> Result<bool, Vec<u8>>,
 {
     let mut inventory_index = 0;
     for asset_index in 0..assets.data.len() {
         let asset = assets.data[asset_index]; // asset_id + side
         let asset_id = get_asset_id(asset);
 
-        let mut inventory_updated = false;
+        let mut inventory_matched = false;
         while inventory_index < inventory_assets.data.len() {
             let inventory_asset = inventory_assets.data[inventory_index];
             let inventory_asset_id = get_asset_id(inventory_asset);
 
             if inventory_asset_id < asset_id {
-                if skip_inventory(asset_index, inventory_index) {
+                if f_matcher(
+                    asset,
+                    asset_id,
+                    asset_index,
+                    inventory_index,
+                    inventory_assets,
+                    MergeJoinBranch::SkipInventoryInner,
+                )? {
                     inventory_index += 1;
                 }
                 continue;
             } else if inventory_asset_id > asset_id {
-                if skip_asset(asset_index, inventory_index) {
+                if f_matcher(
+                    asset,
+                    asset_id,
+                    asset_index,
+                    inventory_index,
+                    inventory_assets,
+                    MergeJoinBranch::SkipAssetInner,
+                )? {
                     inventory_index += 1;
                 }
-                inventory_updated = true;
+                inventory_matched = true;
                 break;
             } else {
-                matched(asset_index, inventory_index);
-                inventory_updated = true;
+                if !f_matcher(
+                    asset,
+                    asset_id,
+                    asset_index,
+                    inventory_index,
+                    inventory_assets,
+                    MergeJoinBranch::Matched,
+                )? {
+                    return Ok(());
+                }
+                inventory_matched = true;
+                break;
             }
         }
 
-        if !inventory_updated {
-            skip_inventory(asset_index, inventory_index);
+        if !inventory_matched {
+            if !f_matcher(
+                asset,
+                asset_id,
+                asset_index,
+                inventory_index,
+                inventory_assets,
+                MergeJoinBranch::SkipAssetOuter,
+            )? {
+                return Ok(());
+            }
         }
     }
+    Ok(())
 }
 
 #[storage]
@@ -220,28 +259,17 @@ impl Dres {
         let mut inventory_liquidity = Vector::from_vec(self.liquidity.get_bytes());
         let mut inventory_slopes = Vector::from_vec(self.slopes.get_bytes());
 
-        let mut inventory_index = 0;
-        for asset_index in 0..assets.data.len() {
-            let asset = assets.data[asset_index]; // asset_id + side
-            let asset_id = get_asset_id(asset);
-
-            let mut inventory_updated = false;
-            while inventory_index < inventory_assets.data.len() {
-                let inventory_asset = inventory_assets.data[inventory_index];
-                let inventory_asset_id = get_asset_id(inventory_asset);
-
-                if inventory_asset_id < asset_id {
-                    // go to next inventory asset and match with same
-                    // incoming asset...
-                    inventory_index += 1;
-                    continue;
-                } else if inventory_asset_id > asset_id {
-                    // if this is new entry, then we insert before
-                    // inventory_index, and we keep same side as incoming
-                    // asset
-                    // NOTE: here in submit() we are adding new assets,
-                    // because supplier is telling us they got new assets
-                    // either in stock or available on market.
+        merge_join(
+            &assets,
+            &mut inventory_assets,
+            |asset, _, asset_index, inventory_index, inventory_assets, case| match case {
+                MergeJoinBranch::SkipInventoryInner => {
+                    // this inventory asset has no update from supplier, we skip it
+                    Ok(true)
+                }
+                MergeJoinBranch::SkipAssetInner => {
+                    // this is new asset from supplier, which does not exist in the inventory
+                    // but there is more inventory entries after it
                     inventory_assets.data.insert(inventory_index, asset);
                     inventory_positions
                         .data
@@ -255,12 +283,19 @@ impl Dres {
                     inventory_slopes
                         .data
                         .insert(inventory_index, slopes.data[asset_index]);
-                    // go to next incoming asset and match with current
-                    // inventory asset...
-                    inventory_updated = true;
-                    inventory_index += 1; // current inventory asset shifted by one
-                    break;
-                } else {
+                    Ok(true)
+                }
+                MergeJoinBranch::SkipAssetOuter => {
+                    // this is new asset from supplier, which does not exist in the inventory
+                    // and there is no more inventory entries after it
+                    inventory_assets.data.push(asset);
+                    inventory_positions.data.push(positions.data[asset_index]);
+                    inventory_prices.data.push(prices.data[asset_index]);
+                    inventory_liquidity.data.push(liquidity.data[asset_index]);
+                    inventory_slopes.data.push(slopes.data[asset_index]);
+                    Ok(true)
+                }
+                MergeJoinBranch::Matched => {
                     // if asset exists in current inventory, then we
                     // overwrite with incoming asset
                     // NOTE: here in submit() we OVERWRITE and NOT UPDATE,
@@ -271,24 +306,10 @@ impl Dres {
                     inventory_prices.data[inventory_index] = prices.data[asset_index];
                     inventory_liquidity.data[inventory_index] = liquidity.data[asset_index];
                     inventory_slopes.data[inventory_index] = slopes.data[asset_index];
-                    // go to next incoming asset and match with next
-                    // inventory asset...
-                    inventory_updated = true;
-                    inventory_index += 1;
-                    break;
+                    Ok(true)
                 }
-            }
-
-            if !inventory_updated {
-                // asset not found in inventory, and sorts after last
-                // inventory asset
-                inventory_assets.data.push(asset);
-                inventory_positions.data.push(positions.data[asset_index]);
-                inventory_prices.data.push(prices.data[asset_index]);
-                inventory_liquidity.data.push(liquidity.data[asset_index]);
-                inventory_slopes.data.push(slopes.data[asset_index]);
-            }
-        }
+            },
+        )?;
 
         log(
             self.vm(),
@@ -307,38 +328,38 @@ impl Dres {
 
         check_assets_sorted(&assets)?;
 
+        //
+        // We fetch asset from inventory by first fetching all inventory
+        // and then retaining only onces that are on the list, and for
+        // those on the list that there is no match in the inventory we
+        // insert zeroes, so that result is perfectly aligned with the list.
+        //
+
         let mut inventory_assets = Labels::from_vec(self.assets.get_bytes());
         let mut inventory_positions = Vector::from_vec(self.positions.get_bytes());
         let mut inventory_prices = Vector::from_vec(self.prices.get_bytes());
         let mut inventory_liquidity = Vector::from_vec(self.liquidity.get_bytes());
         let mut inventory_slopes = Vector::from_vec(self.slopes.get_bytes());
 
-        let mut inventory_index = 0;
-        for asset_index in 0..assets.data.len() {
-            let asset = assets.data[asset_index]; // asset_id + side
-            let asset_id = get_asset_id(asset);
-
-            while inventory_index < inventory_assets.data.len() {
-                let inventory_asset = inventory_assets.data[inventory_index];
-                let inventory_asset_id = get_asset_id(inventory_asset);
-
-                if inventory_asset_id < asset_id {
+        merge_join(
+            &assets,
+            &mut inventory_assets,
+            |_, _, _, inventory_index, inventory_assets, case| match case {
+                MergeJoinBranch::SkipInventoryInner => {
                     // inventory asset not included on list of assets
                     inventory_assets.data.remove(inventory_index);
                     inventory_positions.data.remove(inventory_index);
                     inventory_prices.data.remove(inventory_index);
                     inventory_liquidity.data.remove(inventory_index);
                     inventory_slopes.data.remove(inventory_index);
-                    // go to next inventory asset..
                     // inventory_index remains the same as we removed item at
                     // that index, so next item is now occupying that index.
-                    continue;
-                } else if inventory_asset_id > asset_id {
+                    Ok(false)
+                }
+                MergeJoinBranch::SkipAssetInner => {
                     // asset on the list, but not in the inventory, so we return
                     // flat position.
-                    inventory_assets
-                        .data
-                        .insert(inventory_index, make_asset(asset_id, SIDE_FLAT));
+                    inventory_assets.data.insert(inventory_index, 0);
                     inventory_positions
                         .data
                         .insert(inventory_index, Amount::ZERO);
@@ -347,29 +368,25 @@ impl Dres {
                         .data
                         .insert(inventory_index, Amount::ZERO);
                     inventory_slopes.data.insert(inventory_index, Amount::ZERO);
-                    // go to next incoming asset..
                     // inventory_index remains unchanged, we'll match next
                     // incoming asset against that inventory asset.
-                    break;
-                } else {
+                    Ok(false)
+                }
+                MergeJoinBranch::SkipAssetOuter => {
+                    inventory_positions.data.push(Amount::ZERO);
+                    inventory_prices.data.push(Amount::ZERO);
+                    inventory_liquidity.data.push(Amount::ZERO);
+                    inventory_slopes.data.insert(inventory_index, Amount::ZERO);
+                    Ok(true)
+                }
+                MergeJoinBranch::Matched => {
                     // asset on the list and in the inventory, we can continue
                     // as positions are already there in the state we want to
                     // return them.
-                    inventory_index += 1;
-                    break;
+                    Ok(true)
                 }
-            }
-        }
-
-        // truncate position to remove any remaining unlisted assets
-        inventory_positions
-            .data
-            .resize(inventory_index, Amount::ZERO);
-        inventory_prices.data.resize(inventory_index, Amount::ZERO);
-        inventory_liquidity
-            .data
-            .resize(inventory_index, Amount::ZERO);
-        inventory_slopes.data.resize(inventory_index, Amount::ZERO);
+            },
+        )?;
 
         Ok((
             inventory_positions.to_vec(),
@@ -418,88 +435,85 @@ impl Dres {
             .data
             .resize(order_assets.data.len(), Amount::ZERO);
 
-        let mut next_inventory_index = 0;
-        for order_index in 0..order_assets.data.len() {
-            let order_asset = order_assets.data[order_index];
-            let order_quantity = order_quantities.data[order_index];
+        merge_join(
+            &order_assets,
+            &mut inventory_assets,
+            |order_asset, order_asset_id, order_index, inventory_index, inventory_assets, case| {
+                match case {
+                    MergeJoinBranch::SkipInventoryInner => {
+                        // skip this inventory position, because there is no order
+                        // for that asset.
+                        Ok(true)
+                    }
+                    MergeJoinBranch::SkipAssetOuter => {
+                        // we should have inventory positions submitted for all
+                        // supported assets, even if those positions are zero.
+                        Err(b"Missing inventory position for asset".to_vec())
+                    }
+                    MergeJoinBranch::SkipAssetInner => {
+                        // we should have inventory positions submitted for all
+                        // supported assets, even if those positions are zero.
+                        Err(b"Missing inventory position for asset".to_vec())
+                    }
+                    MergeJoinBranch::Matched => {
+                        let inventory_asset = inventory_assets.data[inventory_index];
 
-            let order_asset_id = get_asset_id(order_asset);
-            let order_side = get_side(order_asset);
+                        let order_side = get_side(order_asset);
+                        let order_quantity = order_quantities.data[order_index];
 
-            // we're performing here merge of two sorted arrays:
-            // - asset orders (from the parameter)
-            // - inventory positions (from storage)
-            // we require that all these are sorted by asset_id.
-            // because they are sorted, we can then use O(n+m) scan
-            // where we skip inventory positions that we are not matching
-            while next_inventory_index < inventory_assets.data.len() {
-                let inventory_index = next_inventory_index;
-                next_inventory_index += 1;
 
-                let inventory_asset = inventory_assets.data[inventory_index];
-                let asset_id = get_asset_id(inventory_asset);
+                        //
+                        // Calculate executed price
+                        //
 
-                if asset_id < order_asset_id {
-                    // skip this inventory position, because there is no order
-                    // for that asset.
-                    continue;
-                } else if asset_id > order_asset_id {
-                    // we should have inventory positions submitted for all
-                    // supported assets, even if those positions are zero.
-                    Err(b"Missing inventory position for asset")?;
-                } else {
-                    assert_eq!(asset_id, order_asset_id);
+                        let price = inventory_prices.data[inventory_index];
+                        let slope = inventory_slopes.data[inventory_index];
 
-                    //
-                    // Calculate executed price
-                    //
+                        let executed_price =
+                            compute_effective_price(order_side, order_quantity, price, slope)?;
 
-                    let price = inventory_prices.data[inventory_index];
-                    let slope = inventory_slopes.data[inventory_index];
+                        //
+                        // Calculate position resulting from matching
+                        //
 
-                    let executed_price =
-                        compute_effective_price(order_side, order_quantity, price, slope)?;
+                        let (new_inventory_position, new_inventory_side) =
+                            compute_effective_position_and_side(
+                                order_side,
+                                order_quantity,
+                                get_side(inventory_asset),
+                                inventory_positions.data[inventory_index],
+                            )?;
 
-                    //
-                    // Calculate position resulting from matching
-                    //
+                        //
+                        // Calcualte how deep is the volley to apply limits
+                        //
 
-                    let (new_inventory_position, new_inventory_side) =
-                        compute_effective_position_and_side(
-                            order_side,
-                            order_quantity,
-                            get_side(inventory_asset),
-                            inventory_positions.data[inventory_index],
+                        let inventory_asset_volley_size = total_volley_calc.update_total_volley(
+                            new_inventory_side,
+                            new_inventory_position,
+                            price,
+                            slope,
                         )?;
 
-                    //
-                    // Calcualte how deep is the volley to apply limits
-                    //
+                        if max_asset_volley.is_less_than(&inventory_asset_volley_size) {
+                            Err(b"Max asset volley size reached")?;
+                        }
 
-                    let inventory_asset_volley_size = total_volley_calc.update_total_volley(
-                        new_inventory_side,
-                        new_inventory_position,
-                        price,
-                        slope,
-                    )?;
+                        if max_total_volley.is_less_than(&total_volley_calc.total_volley_size) {
+                            Err(b"Max total volley size reached")?;
+                        }
 
-                    if max_asset_volley.is_less_than(&inventory_asset_volley_size) {
-                        Err(b"Max asset volley size reached")?;
+                        executed_prices.data[order_index] = executed_price;
+                        executed_quantities.data[order_index] = order_quantity;
+
+                        inventory_positions.data[inventory_index] = new_inventory_position;
+                        inventory_assets.data[inventory_index] =
+                            make_asset(order_asset_id, new_inventory_side);
+                        Ok(true)
                     }
-
-                    if max_total_volley.is_less_than(&total_volley_calc.total_volley_size) {
-                        Err(b"Max total volley size reached")?;
-                    }
-
-                    executed_prices.data[order_index] = executed_price;
-                    executed_quantities.data[order_index] = order_quantity;
-
-                    inventory_positions.data[inventory_index] = new_inventory_position;
-                    inventory_assets.data[inventory_index] =
-                        make_asset(asset_id, new_inventory_side);
                 }
-            }
-        }
+            },
+        )?;
 
         self.assets.set_bytes(inventory_assets.to_vec());
         self.positions.set_bytes(inventory_positions.to_vec());
