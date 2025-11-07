@@ -1,8 +1,8 @@
 [package]
-name = "disolver"
+name = "gateway"
 version = "0.1.0"
 edition = "2021"
-description = "Arbitrum Stylus Decentralised Index Solver Core"
+description = "Arbitrum Stylus Decentralised Gateway (Authorised Provider)"
 
 [dependencies]
 alloy-primitives = { workspace = true }
@@ -27,7 +27,7 @@ test-debug = ["stylus-sdk/debug", "deli/debug", "deli/stylus-test"]
 mini-alloc = ["stylus-sdk/mini-alloc"]
 
 [[bin]]
-name = "disolver"
+name = "dior"
 path = "src/main.rs"
 
 [lib]

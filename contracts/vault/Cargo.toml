@@ -1,8 +1,8 @@
 [package]
-name = "dres"
+name = "vault"
 version = "0.1.0"
 edition = "2021"
-description = "Arbitrum Stylus Decentralised Liquidity Reserve Tracker (Inventory Manager)"
+description = "Arbitrum Stylus Decentralised Vault (ITP Index)"
 
 [dependencies]
 alloy-primitives = { workspace = true }
