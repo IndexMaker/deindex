@@ -1446,6 +1446,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "devil"
+version = "0.1.0"
+dependencies = [
+ "alloy-primitives",
+ "alloy-sol-types",
+ "deli",
+ "dotenv",
+ "ethers",
+ "eyre",
+ "hex",
+ "stylus-sdk",
+ "tokio",
+]
+
+[[package]]
 name = "digest"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1572,21 +1587,6 @@ checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 
 [[package]]
 name = "dres"
-version = "0.1.0"
-dependencies = [
- "alloy-primitives",
- "alloy-sol-types",
- "deli",
- "dotenv",
- "ethers",
- "eyre",
- "hex",
- "stylus-sdk",
- "tokio",
-]
-
-[[package]]
-name = "dres2"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives",

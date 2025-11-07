@@ -1,15 +1,15 @@
 [package]
-name = "dres2"
+name = "devil"
 version = "0.1.0"
 edition = "2021"
-description = "Yet anoter version of Decentralised Liquidity Reserve Tracker (Inventory Manager)"
+description = "Arbitrum Stylus Decentralised Vector Intermediate Language"
 
 [dependencies]
 alloy-primitives = { workspace = true }
 alloy-sol-types = { workspace = true }
 stylus-sdk = { workspace = true }
 hex = { workspace = true }
-deli = { workspace = true, features = ["stylus", "vec-u128"] }
+deli = { workspace = true, features = ["stylus"] }
 
 [dev-dependencies]
 alloy-primitives = { workspace = true, features = ["sha3-keccak"] }
@@ -18,7 +18,7 @@ ethers = { workspace = true }
 eyre = { workspace = true }
 stylus-sdk = { workspace = true, features = ["stylus-test"] }
 dotenv = { workspace = true }
-deli = { workspace = true, features = ["stylus"], default_features = false }
+deli = { workspace = true, features = ["stylus"] }
 
 [features]
 default = ["mini-alloc"]

@@ -5,11 +5,11 @@ members = [
     "contracts/daxos",
     "contracts/decks",
     "contracts/decor",
+    "contracts/devil",
     "contracts/dion",
     "contracts/dior",
     "contracts/disolver",
     "contracts/dres",
-    "contracts/dres2",
     "contracts/drip",
 
     # Library Packages
