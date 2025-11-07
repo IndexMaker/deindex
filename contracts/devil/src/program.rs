@@ -1,4 +1,4 @@
-use core::cmp::Ordering;
+use core::{clone, cmp::Ordering, mem::swap};
 
 use alloc::vec::Vec;
 use alloy_primitives::U128;
@@ -119,41 +119,76 @@ const OP_LDL: u128 = 1;
 const OP_LDV: u128 = 2;
 const OP_LDS: u128 = 3;
 const OP_LDD: u128 = 4;
-const OP_LDVS: u128 = 5;
-const OP_STL: u128 = 6;
-const OP_STV: u128 = 7;
-const OP_STS: u128 = 8;
-const OP_STVS: u128 = 9;
-const OP_ADDV: u128 = 10;
-const OP_SUBV: u128 = 11;
-const OP_MULV: u128 = 12;
-const OP_MULS: u128 = 13;
-const OP_DIVV: u128 = 14;
-const OP_DIVS: u128 = 15;
-const OP_SUM: u128 = 16;
-const OP_MIN: u128 = 17;
-const OP_MAX: u128 = 18;
-const OP_MINV: u128 = 19;
-const OP_MAXV: u128 = 20;
-const OP_LABUNION: u128 = 21;
-const OP_VZERO: u128 = 22;
-const OP_VONE: u128 = 23;
-const OP_PUSHS: u128 = 24;
-const OP_JADD: u128 = 25;
+const OP_LDR: u128 = 5;
+const OP_LDVS: u128 = 6;
+const OP_STL: u128 = 7;
+const OP_STV: u128 = 8;
+const OP_STS: u128 = 9;
+const OP_STR: u128 = 10;
+const OP_STVS: u128 = 11;
+const OP_ADDV: u128 = 12;
+const OP_SUBV: u128 = 13;
+const OP_MULV: u128 = 14;
+const OP_MULS: u128 = 15;
+const OP_DIVV: u128 = 16;
+const OP_DIVS: u128 = 17;
+const OP_SQRTV: u128 = 18;
+const OP_SQRTS: u128 = 19;
+const OP_SUM: u128 = 20;
+const OP_MIN: u128 = 21;
+const OP_MAX: u128 = 22;
+const OP_MINV: u128 = 23;
+const OP_MAXV: u128 = 24;
+const OP_LABUNION: u128 = 25;
+const OP_VZERO: u128 = 26;
+const OP_VONE: u128 = 27;
+const OP_PUSHS: u128 = 28;
+const OP_PUSHL: u128 = 29;
+const OP_PUSHSV: u128 = 30;
+const OP_PUSHLV: u128 = 31;
+const OP_POP: u128 = 32;
+const OP_SWAP: u128 = 33;
+const OP_JADD: u128 = 34;
+const OP_B: u128 = 35;
+const OP_FOLD: u128 = 36;
 
 enum Operand {
+    None,
     Labels(Labels),
     Vector(Vector),
     Scalar(Amount),
+    Label(u128),
+}
+
+impl Clone for Operand {
+    fn clone(&self) -> Self {
+        match self {
+            Operand::None => Operand::None,
+            Operand::Labels(x) => Operand::Labels(Labels {
+                data: x.data.clone(),
+            }),
+            Operand::Vector(x) => Operand::Vector(Vector {
+                data: x.data.clone(),
+            }),
+            Operand::Scalar(x) => Operand::Scalar(x.clone()),
+            Operand::Label(x) => Operand::Label(x.clone()),
+        }
+    }
 }
 
 struct Stack {
     stack: Vec<Operand>,
+    registry: Vec<Operand>,
 }
 
 impl Stack {
-    fn new() -> Self {
-        Self { stack: Vec::new() }
+    fn new(num_registers: usize) -> Self {
+        let mut registry = Vec::new();
+        registry.resize_with(num_registers, || Operand::None);
+        Self {
+            stack: Vec::new(),
+            registry,
+        }
     }
 
     fn push(&mut self, operand: Operand) {
@@ -167,16 +202,25 @@ impl Stack {
 
     fn ldd(&mut self, pos: usize) -> Result<(), ErrorCode> {
         let v = self.stack.get(pos).ok_or_else(|| ErrorCode::OutOfRange)?;
-        let z = match v {
-            Operand::Labels(x) => Operand::Labels(Labels {
-                data: x.data.clone(),
-            }),
-            Operand::Vector(x) => Operand::Vector(Vector {
-                data: x.data.clone(),
-            }),
-            Operand::Scalar(x) => Operand::Scalar(x.clone()),
-        };
-        self.push(z);
+        self.push(v.clone());
+        Ok(())
+    }
+
+    fn ldr(&mut self, pos: usize) -> Result<(), ErrorCode> {
+        let v = self
+            .registry
+            .get(pos)
+            .ok_or_else(|| ErrorCode::OutOfRange)?;
+        self.push(v.clone());
+        Ok(())
+    }
+
+    fn op_str(&mut self, pos: usize) -> Result<(), ErrorCode> {
+        let x = self
+            .registry
+            .get_mut(pos)
+            .ok_or_else(|| ErrorCode::OutOfRange)?;
+        *x = self.stack.pop().ok_or_else(|| ErrorCode::StackUnderflow)?;
         Ok(())
     }
 
@@ -437,6 +481,37 @@ impl Stack {
             _ => {
                 Err(ErrorCode::InvalidOperand)?;
             }
+        }
+        Ok(())
+    }
+
+    fn sqrtv(&mut self) -> Result<(), ErrorCode> {
+        let v1 = self
+            .stack
+            .last_mut()
+            .ok_or_else(|| ErrorCode::StackUnderflow)?;
+        match v1 {
+            Operand::Vector(ref mut v1) => {
+                for i in 0..v1.data.len() {
+                    let x = &mut v1.data[i];
+                    *x = x.checked_sqrt().ok_or_else(|| ErrorCode::MathOverflow)?;
+                }
+            }
+            _ => return Err(ErrorCode::InvalidOperand),
+        }
+        Ok(())
+    }
+
+    fn sqrts(&mut self) -> Result<(), ErrorCode> {
+        let v1 = self
+            .stack
+            .last_mut()
+            .ok_or_else(|| ErrorCode::StackUnderflow)?;
+        match v1 {
+            Operand::Scalar(ref mut x) => {
+                *x = x.checked_sqrt().ok_or_else(|| ErrorCode::MathOverflow)?;
+            }
+            _ => return Err(ErrorCode::InvalidOperand),
         }
         Ok(())
     }
@@ -706,6 +781,57 @@ impl Stack {
         Ok(())
     }
 
+    fn pushl(&mut self, value: u128) -> Result<(), ErrorCode> {
+        self.push(Operand::Label(value));
+        Ok(())
+    }
+
+    fn pushsv(&mut self, value: u128) -> Result<(), ErrorCode> {
+        let v = self
+            .stack
+            .last_mut()
+            .ok_or_else(|| ErrorCode::StackUnderflow)?;
+        match v {
+            Operand::Vector(ref mut v) => {
+                v.data.push(Amount::from_u128_raw(value));
+            }
+            _ => Err(ErrorCode::InvalidOperand)?,
+        }
+        Ok(())
+    }
+
+    fn pushlv(&mut self, value: u128) -> Result<(), ErrorCode> {
+        let v = self
+            .stack
+            .last_mut()
+            .ok_or_else(|| ErrorCode::StackUnderflow)?;
+        match v {
+            Operand::Labels(ref mut v) => {
+                v.data.push(value);
+            }
+            _ => Err(ErrorCode::InvalidOperand)?,
+        }
+        Ok(())
+    }
+
+    fn op_pop(&mut self, count: usize) -> Result<(), ErrorCode> {
+        if self.stack.len() < count {
+            Err(ErrorCode::StackUnderflow)?;
+        }
+        for _ in self.stack.drain(0..count) {}
+        Ok(())
+    }
+
+    fn swap(&mut self, pos: usize) -> Result<(), ErrorCode> {
+        let (v1, rest) = self
+            .stack
+            .split_last_mut()
+            .ok_or_else(|| ErrorCode::StackUnderflow)?;
+        let v2 = rest.get_mut(pos).ok_or_else(|| ErrorCode::OutOfRange)?;
+        swap(v1, v2);
+        Ok(())
+    }
+
     fn jadd(&mut self, mut pos_labels_a: usize, mut pos_labels_b: usize) -> Result<(), ErrorCode> {
         // Current stack size before popping is self.stack.len().
         let original_len = self.stack.len();
@@ -832,9 +958,13 @@ where
         Self { vio }
     }
 
-    pub fn execute(&mut self, code_bytes: Vec<u8>) -> Result<(), ErrorCode> {
+    pub fn execute(&mut self, code_bytes: Vec<u8>, num_registers: usize) -> Result<(), ErrorCode> {
         let code = Labels::from_vec(code_bytes).data;
-        let mut stack = Stack::new();
+        let mut stack = Stack::new(num_registers);
+        self.execute_with_stack(code, &mut stack)
+    }
+
+    fn execute_with_stack(&mut self, code: Vec<u128>, stack: &mut Stack) -> Result<(), ErrorCode> {
         let mut pc = 0;
         while pc < code.len() {
             let op_code = code[pc];
@@ -899,6 +1029,16 @@ where
                     pc += 1;
                     stack.ldd(pos)?;
                 }
+                OP_LDR => {
+                    let reg = code[pc] as usize;
+                    pc += 1;
+                    stack.ldr(reg)?;
+                }
+                OP_STR => {
+                    let reg = code[pc] as usize;
+                    pc += 1;
+                    stack.op_str(reg)?;
+                }
                 OP_LDVS => {
                     let count = code[pc] as usize;
                     pc += 1;
@@ -939,6 +1079,12 @@ where
                     pc += 1;
                     stack.divs(pos)?;
                 }
+                OP_SQRTV => {
+                    stack.sqrtv()?;
+                }
+                OP_SQRTS => {
+                    stack.sqrts()?;
+                }
                 OP_SUM => {
                     stack.sum()?;
                 }
@@ -978,12 +1124,106 @@ where
                     pc += 1;
                     stack.pushs(val)?;
                 }
+                OP_PUSHL => {
+                    let val = code[pc];
+                    pc += 1;
+                    stack.pushl(val)?;
+                }
+                OP_PUSHSV => {
+                    let val = code[pc];
+                    pc += 1;
+                    stack.pushsv(val)?;
+                }
+                OP_PUSHLV => {
+                    let val = code[pc];
+                    pc += 1;
+                    stack.pushlv(val)?;
+                }
+                OP_POP => {
+                    let count = code[pc] as usize;
+                    pc += 1;
+                    stack.op_pop(count)?;
+                }
+                OP_SWAP => {
+                    let pos = code[pc] as usize;
+                    pc += 1;
+                    stack.swap(pos)?;
+                }
                 OP_JADD => {
                     let pos_1 = code[pc] as usize;
                     pc += 1;
                     let pos_2 = code[pc] as usize;
                     pc += 1;
                     stack.jadd(pos_1, pos_2)?;
+                }
+                OP_B => {
+                    // B <program_id> <num_inputs> <num_outputs> <num_registers>
+                    let code_address = U128::from(code[pc]);
+                    pc += 1;
+                    let num_inputs = code[pc] as usize;
+                    pc += 1;
+                    let num_outputs = code[pc] as usize;
+                    pc += 1;
+                    let num_regs = code[pc] as usize;
+                    pc += 1;
+                    let mut st = Stack::new(num_regs);
+                    let mut prg = Program::new(self.vio);
+                    let cod = prg.vio.load_labels(code_address)?;
+                    let frm = stack
+                        .stack
+                        .len()
+                        .checked_sub(num_inputs)
+                        .ok_or_else(|| ErrorCode::StackUnderflow)?;
+                    st.stack.extend(stack.stack.drain(frm..));
+                    prg.execute_with_stack(cod.data, &mut st)?;
+                    let frm = st
+                        .stack
+                        .len()
+                        .checked_sub(num_outputs)
+                        .ok_or_else(|| ErrorCode::StackUnderflow)?;
+                    stack.stack.extend(st.stack.drain(frm..));
+                }
+                OP_FOLD => {
+                    // FOLD <program_id> <num_inputs> <num_outputs> <num_registers>
+                    let code_address = U128::from(code[pc]);
+                    pc += 1;
+                    let num_inputs = code[pc] as usize;
+                    pc += 1;
+                    let num_outputs = code[pc] as usize;
+                    pc += 1;
+                    let num_regs = code[pc] as usize;
+                    pc += 1;
+                    let mut st = Stack::new(num_regs);
+                    let mut prg = Program::new(self.vio);
+                    let cod = prg.vio.load_labels(code_address)?;
+                    let source = stack.stack.pop().ok_or_else(|| ErrorCode::StackUnderflow)?;
+                    let frm = stack
+                        .stack
+                        .len()
+                        .checked_sub(num_inputs)
+                        .ok_or_else(|| ErrorCode::StackUnderflow)?;
+                    st.stack.extend(stack.stack.drain(frm..));
+                    match source {
+                        Operand::Labels(s) => {
+                            for item in s.data {
+                                st.stack.push(Operand::Label(item));
+                                prg.execute_with_stack(cod.data.clone(), &mut st)?;
+                            }
+                        }
+                        Operand::Vector(s) => {
+                            for item in s.data {
+                                st.stack.push(Operand::Scalar(item));
+                                prg.execute_with_stack(cod.data.clone(), &mut st)?;
+                            }
+                        }
+                        _ => Err(ErrorCode::InvalidOperand)?,
+                    }
+                    let frm = st
+                        .stack
+                        .len()
+                        .checked_sub(num_outputs)
+                        .ok_or_else(|| ErrorCode::StackUnderflow)?;
+                    stack.stack.extend(st.stack.drain(frm..));
                 }
                 _ => {
                     Err(ErrorCode::InvalidInstruction)?;

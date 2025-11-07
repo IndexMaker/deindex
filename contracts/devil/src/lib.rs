@@ -108,10 +108,10 @@ impl Devil {
         Ok(vector.get_bytes())
     }
 
-    pub fn execute(&mut self, code: Vec<u8>) -> Result<(), Vec<u8>> {
+    pub fn execute(&mut self, code: Vec<u8>, num_registry: u128) -> Result<(), Vec<u8>> {
         self.check_owner()?;
         let mut program = Program::new(self);
-        program.execute(code).map_err(|_| b"Program error")?;
+        program.execute(code, num_registry as usize).map_err(|_| b"Program error")?;
         Ok(())
     }
 }
