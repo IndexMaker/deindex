@@ -23,6 +23,7 @@ sol! {
 #[entrypoint]
 pub struct Gateway {
     owner: StorageAddress,
+    devil: StorageAddress,
     supply_long: StorageU128,  // Vector = [+Supply; num_assets]
     supply_short: StorageU128, // Vector = [-Supply; num_assets]
     demand_long: StorageU128,  // Vector = [+Demand; num_assets]
@@ -36,7 +37,8 @@ pub struct Gateway {
 
 impl Gateway {
     fn check_owner(&self, address: Address) -> Result<(), Vec<u8>> {
-        if address != self.owner.get() {
+        let current_owner = self.owner.get();
+        if !current_owner.is_zero() && address != current_owner {
             Err(b"Mut be owner")?;
         }
         Ok(())
@@ -45,6 +47,13 @@ impl Gateway {
 
 #[public]
 impl Gateway {
+    pub fn setup(&mut self, owner: Address, devil: Address) -> Result<(), Vec<u8>> {
+        self.check_owner(self.vm().msg_sender())?;
+        self.owner.set(owner);
+        self.devil.set(devil);
+        Ok(())
+    }
+
     pub fn submit_supply(&mut self) -> Result<(), Vec<u8>> {
         self.check_owner(self.vm().msg_sender())?;
         todo!()

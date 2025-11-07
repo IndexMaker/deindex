@@ -27,9 +27,10 @@ pub struct Devil {
 }
 
 impl Devil {
-    fn check_owner(&self) -> Result<(), Vec<u8>> {
-        if self.vm().msg_sender() != self.owner.get() {
-            Err(b"Must be owner")?;
+    fn check_owner(&self, address: Address) -> Result<(), Vec<u8>> {
+        let current_owner = self.owner.get();
+        if !current_owner.is_zero() && address != current_owner {
+            Err(b"Mut be owner")?;
         }
         Ok(())
     }
@@ -78,18 +79,15 @@ impl VectorIO for Devil {
 
 #[public]
 impl Devil {
-    pub fn set_owner(&mut self, owner: Address)  -> Result<(), Vec<u8>> {
+    pub fn setup(&mut self, owner: Address)  -> Result<(), Vec<u8>> {
         // Note it's cheaper in terms of KiB to not use contructor
-        let current_owner = self.owner.get();
-        if !current_owner.is_zero() {
-            Err(b"Cannot change owner")?;
-        }
+        self.check_owner(self.vm().msg_sender())?;
         self.owner.set(owner);
         Ok(())
     }
 
     pub fn submit(&mut self, id: U128, data: Vec<u8>) -> Result<(), Vec<u8>> {
-        self.check_owner()?;
+        self.check_owner(self.vm().msg_sender())?;
         // Note it's cheaper in terms of KiB to limit public interface
         let mut vector = self.vectors.setter(id);
         if !vector.is_empty() {
@@ -100,7 +98,7 @@ impl Devil {
     }
 
     pub fn get(&self, id: U128) -> Result<Vec<u8>, Vec<u8>> {
-        self.check_owner()?;
+        self.check_owner(self.vm().msg_sender())?;
         let vector = self.vectors.getter(id);
         if !vector.is_empty() {
             Err(b"No data")?;
@@ -109,7 +107,7 @@ impl Devil {
     }
 
     pub fn execute(&mut self, code: Vec<u8>, num_registry: u128) -> Result<(), Vec<u8>> {
-        self.check_owner()?;
+        self.check_owner(self.vm().msg_sender())?;
         let mut program = Program::new(self);
         program.execute(code, num_registry as usize).map_err(|_| b"Program error")?;
         Ok(())
