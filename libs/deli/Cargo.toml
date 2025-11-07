@@ -15,9 +15,10 @@ alloy-primitives = { workspace = true, features = ["sha3-keccak"] }
 stylus-sdk = { workspace = true, features = ["stylus-test"] }
 
 [features]
-default = []
+default = ["vec-u8"]
 debug = []
 vec-u128 = []
+vec-u8 = []
 amount-sqrt = []
 stylus = ["stylus-sdk"]
 stylus-test = ["stylus", "debug"]

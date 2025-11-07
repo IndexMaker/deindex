@@ -1,0 +1,44 @@
+[package]
+name = "devil"
+version = "0.1.0"
+edition = "2021"
+description = "Arbitrum Stylus Decentralised Vector Intermediate Language"
+
+[dependencies]
+alloy-primitives = { workspace = true }
+alloy-sol-types = { workspace = true }
+stylus-sdk = { workspace = true }
+hex = { workspace = true }
+deli = { workspace = true, features = ["stylus", "amount-sqrt"] }
+
+[dev-dependencies]
+alloy-primitives = { workspace = true, features = ["sha3-keccak"] }
+tokio = { workspace = true, features = ["full"] }
+ethers = { workspace = true }
+eyre = { workspace = true }
+stylus-sdk = { workspace = true, features = ["stylus-test"] }
+dotenv = { workspace = true }
+deli = { workspace = true, features = ["stylus"] }
+
+[features]
+default = ["mini-alloc"]
+export-abi = ["stylus-sdk/export-abi"]
+test-debug = ["stylus-sdk/debug", "deli/debug", "deli/stylus-test"]
+mini-alloc = ["stylus-sdk/mini-alloc"]
+
+[[bin]]
+name = "dior"
+path = "src/main.rs"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[profile.release]
+codegen-units = 1
+strip = true
+lto = true
+panic = "abort"
+
+# If you need to reduce the binary size, it is advisable to try other
+# optimization levels, such as "s" and "z"
+opt-level = "s"
