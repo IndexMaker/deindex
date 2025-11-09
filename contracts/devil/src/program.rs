@@ -1,5 +1,8 @@
 use core::{cmp::Ordering, mem::swap};
 
+#[cfg(test)]
+use core::fmt::Debug;
+
 use alloc::vec::Vec;
 use alloy_primitives::U128;
 use deli::{amount::Amount, labels::Labels, log_msg, vector::Vector};
@@ -14,6 +17,23 @@ pub enum ErrorCode {
     NotAligned,
     MathUnderflow,
     MathOverflow,
+}
+
+#[cfg(test)]
+impl Debug for ErrorCode {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::StackUnderflow => write!(f, "StackUnderflow"),
+            Self::StackOverflow => write!(f, "StackOverflow"),
+            Self::InvalidInstruction => write!(f, "InvalidInstruction"),
+            Self::InvalidOperand => write!(f, "InvalidOperand"),
+            Self::NotFound => write!(f, "NotFound"),
+            Self::OutOfRange => write!(f, "OutOfRange"),
+            Self::NotAligned => write!(f, "NotAligned"),
+            Self::MathUnderflow => write!(f, "MathUnderflow"),
+            Self::MathOverflow => write!(f, "MathOverflow"),
+        }
+    }
 }
 
 pub trait VectorIO {
@@ -33,142 +53,63 @@ where
     vio: &'vio mut VIO,
 }
 
-//
-// Compute asset quantities for quantity of an index
-//
-// LDS IndexQuantity
-// LDV AssetWeights
-// MULS 1
-// STV AssetQuantities
-//
+// VIL Instruction Set (Grouped & Aligned)
+// Each functional group starts on a multiple of 10.
 
-//
-// Compute index price from asset prices
-//
-// LDV AssetPrice
-// LDV AssetWeights
-// MULV 1
-// SUM
-// STS IndexPrice
-//
-
-//
-// Compute index slope from assets slopes
-//
-// LDV AssetSlope
-// LDV AssetWeights
-// LDD  0
-// MULV 0 ; AssetWeights^2
-// MULV 1
-// SUM
-// STS IndexSlope
-//
-
-//
-// Compute index quote from assets liquidity
-//
-// LDV AssetWeights
-// LDV AssetLiquidity
-// DIVV 1
-// MIN
-// STS IndexCapacity
-//
-
-//
-// Compute fill distribution
-//
-// LDV ExectutedAssetQuantities
-// LDV AssetWeights ; Index 1
-// LDV AssetWeights ; Index 2
-// LDV AssetWeights ; Index 3
-// LDD 3
-// DIVV 3
-// MIN ; Index 1 max possible
-// LDD 4
-// DIVV 3
-// MIN ; Index 2 max possible
-// LDD 5
-// DIVV 3
-// MIN ; Index 3 max possible
-// LDVS 3 ; Fold scalars into vector [Index 1, Index 2, Index3 max possible]
-// LDS IndexQuantity ; Index 1
-// LDS IndexQuantity ; Index 2
-// LDS IndexQuantity ; Index 3
-// LDVS 3 ; Fold into vector [IndexQuantity Index1, Index2, Index3]
-// MINV 1 ; TODO: min of vector components of two zipped vectors
-// LDD 0
-// SUM
-// LDD 1
-// DIVV 1 ; Vector of fill fractions for each index
-// MULV 2 ; Vector of index quantities filled
-// LDD 0
-// STV FilledIndexQuantities ; a vector [FilledIndexQuantity Index1, Index2, Index3]
-// STVS 0 ; Expand vector into scalars
-// LDD 8
-// MULS 3
-// STV AssignedAssetQuantities Index 1
-// LDD 7
-// MULS 2
-// STV AssignedAssetQuantities Index 2
-// LDD 6
-// MULS 1
-// STV AssignedAssetQuantities Index 3
-//
-
-// Data Loading & Stack Access (1 - 5)
+// 1. Data Loading & Stack Access (10-14)
 const OP_LDL: u128 = 10; // Load Labels object from VIO by ID
 const OP_LDV: u128 = 11; // Load Vector object from VIO by ID
 const OP_LDS: u128 = 12; // Load Scalar value from VIO by ID
 const OP_LDD: u128 = 13; // Load Duplicate (copy) of stack operand at [T-n]
 const OP_LDR: u128 = 14; // Load value from Registry (R0-Rn)
 
-// Data Storage & Register Access (6 - 9)
+// 2. Data Storage & Register Access (20-23)
 const OP_STL: u128 = 20; // Store Labels object into VIO
 const OP_STV: u128 = 21; // Store Vector object into VIO
 const OP_STS: u128 = 22; // Store Scalar value into VIO
 const OP_STR: u128 = 23; // Store into Registry (R0-Rn) AND pop TOS
 
-// Data Structure Manipulation (10 - 14)
+// 3. Data Structure Manipulation (30-34)
 const OP_PKV: u128 = 30; // Pack 'n' values from stack into a new Vector
 const OP_PKL: u128 = 31; // Pack 'n' values from stack into a new Labels object
 const OP_UNPK: u128 = 32; // Unpack a Vector/Labels object onto the stack
 const OP_VPUSH: u128 = 33; // Push a scalar onto the Vector (TOS)
 const OP_VPOP: u128 = 34; // Pop a scalar from the Vector (TOS)
+const OP_T: u128 = 35; // Transpose N vectors on stack [V1, V2] -> [T1, T2]
 
-// Labels Manipulation (15 - 17)
+// 4. Labels Manipulation (40-42)
 const OP_LUNN: u128 = 40; // Union of two Labels objects (TOS and T-n)
 const OP_LPUSH: u128 = 41; // Push a label value onto the Labels object (TOS)
 const OP_LPOP: u128 = 42; // Pop a label value from the Labels object (TOS)
 
-// Arithmetic & Core Math (18 - 22)
+// 5. Arithmetic & Core Math (50-54)
 const OP_ADD: u128 = 50; // Add TOS by operand at [T-n]
 const OP_SUB: u128 = 51; // Subtract TOS by operand at [T-n]
 const OP_MUL: u128 = 52; // Multiply TOS by operand at [T-n]
 const OP_DIV: u128 = 53; // Divide TOS by operand at [T-n]
 const OP_SQRT: u128 = 54; // Square root of TOS (scalar or component-wise vector)
 
-// Logic & Comparison (23 - 24)
-const OP_MIN: u128 = 60; // Min between TOS and operand at [T-n] (scalar or pairwise vector)
-const OP_MAX: u128 = 61; // Max between TOS and operand at [T-n] (scalar or pairwise vector)
+// 6. Logic & Comparison (60-61)
+const OP_MIN: u128 = 60; // Min between TOS and operand at [T-n]
+const OP_MAX: u128 = 61; // Max between TOS and operand at [T-n]
 
-// Vector Aggregation (25 - 27)
+// 7. Vector Aggregation (70-72)
 const OP_VSUM: u128 = 70; // Sum of all vector components
 const OP_VMIN: u128 = 71; // Minimum value found within vector components
 const OP_VMAX: u128 = 72; // Maximum value found within vector components
 
-// Immediate Values & Vector Creation (28 - 31)
+// 8. Immediate Values & Vector Creation (80-83)
 const OP_IMMS: u128 = 80; // Push immediate Scalar value on stack
 const OP_IMML: u128 = 81; // Push immediate Label value on stack
 const OP_ZEROS: u128 = 82; // Create Vector of zeros matching length of Labels (TOS)
 const OP_ONES: u128 = 83; // Create Vector of ones matching length of Labels (TOS)
 
-// Stack Control & Program Flow (32 - 36)
+// 9. Stack Control & Program Flow (90-94)
 const OP_POP: u128 = 90; // Pop 'n' values from the stack
 const OP_SWAP: u128 = 91; // Swap TOS with operand at [T-n]
 const OP_JADD: u128 = 92; // Left outer join values (add) using Labels
 const OP_B: u128 = 93; // Branch unconditionally to a new PC
 const OP_FOLD: u128 = 94; // Fold (iterate) over vector/label elements
-
 
 enum Operand {
     None,
@@ -316,6 +257,45 @@ impl Stack {
             }
         }
         self.stack.extend(exp);
+        Ok(())
+    }
+
+    fn transpose(&mut self, count: usize) -> Result<(), ErrorCode> {
+        if count == 0 {
+            Err(ErrorCode::InvalidOperand)?;
+        }
+
+        if count == 1 {
+            return self.unpk();
+        }
+
+        let pos = self.get_stack_offset(count)?;
+        let mut vectors = Vec::with_capacity(count);
+        for v in self.stack.drain(pos..) {
+            match v {
+                Operand::Vector(v) => vectors.push(v.data),
+                _ => {
+                    Err(ErrorCode::InvalidOperand)?;
+                }
+            }
+        }
+        let num_rows = vectors[0].len();
+        for v in &vectors {
+            if v.len() != num_rows {
+                Err(ErrorCode::InvalidOperand)?;
+            }
+        }
+        let mut transposed = vec![vec![Amount::ZERO; count]; num_rows];
+        for row in 0..num_rows {
+            for col in 0..count {
+                transposed[row][col] = vectors[col][row];
+            }
+        }
+
+        for v in transposed {
+            self.stack.push(Operand::Vector(Vector { data: v }));
+        }
+
         Ok(())
     }
 
@@ -671,160 +651,36 @@ impl Stack {
         Ok(())
     }
 
-    fn lunn(&mut self, other_labels_pos: usize) -> Result<(), ErrorCode> {
-        let current_len = self.stack.len();
-        if current_len < 1 {
-            return Err(ErrorCode::StackUnderflow);
-        }
+    fn zeros(&mut self, pos: usize) -> Result<(), ErrorCode> {
+        let stack_index = self.get_stack_index(pos)?;
+        let labels = self.stack.get(stack_index).ok_or(ErrorCode::OutOfRange)?;
 
-        // --- 1. Calculate Absolute Indices and Borrow Labels ---
-
-        // Labels A is at the top of the stack (pos 0 relative to end)
-        let last_idx = current_len - 1;
-
-        // Labels B is at other_labels_pos relative to the top
-        let other_idx = last_idx
-            .checked_sub(other_labels_pos)
-            .ok_or(ErrorCode::OutOfRange)?;
-
-        // Check that we're not trying to union an item with itself
-        if last_idx == other_idx {
-            // Simple case: Unioning with self is just the original Labels.
-            // We still need to copy and push the result to the stack top.
-            // We will fall through to the copy logic after the main merge.
-        }
-
-        // Borrow Labels A (last) and Labels B (other) immutably
-        let labels_a_op = self.stack.get(last_idx).ok_or(ErrorCode::OutOfRange)?;
-        let labels_b_op = self.stack.get(other_idx).ok_or(ErrorCode::OutOfRange)?;
-
-        let labels_a = match labels_a_op {
-            Operand::Labels(l) => l,
-            _ => return Err(ErrorCode::InvalidOperand),
-        };
-        let labels_b = match labels_b_op {
-            Operand::Labels(l) => l,
-            _ => return Err(ErrorCode::InvalidOperand),
-        };
-
-        // --- 2. Perform the Sorted Union Merge ---
-
-        let mut result_data: Vec<u128> =
-            Vec::with_capacity(labels_a.data.len() + labels_b.data.len());
-
-        let mut i = 0; // Pointer for A (Last)
-        let mut j = 0; // Pointer for B (Other)
-
-        while i < labels_a.data.len() || j < labels_b.data.len() {
-            // Safe access to current label in A and B
-            let label_a = labels_a.data.get(i);
-            let label_b = labels_b.data.get(j);
-
-            let next_label: &u128;
-
-            match (label_a, label_b) {
-                (Some(la), Some(lb)) => {
-                    match la.cmp(lb) {
-                        Ordering::Less => {
-                            // Case 1: Label A is smaller. Take A. Advance A.
-                            next_label = la;
-                            i += 1;
-                        }
-                        Ordering::Equal => {
-                            // Case 2: Match. Take one (A). Advance both.
-                            next_label = la;
-                            i += 1;
-                            j += 1;
-                        }
-                        Ordering::Greater => {
-                            // Case 3: Label B is smaller. Take B. Advance B.
-                            next_label = lb;
-                            j += 1;
-                        }
-                    }
-                }
-                (Some(la), None) => {
-                    // Case 4: Reached end of B. Take A. Advance A.
-                    next_label = la;
-                    i += 1;
-                }
-                (None, Some(lb)) => {
-                    // Case 5: Reached end of A. Take B. Advance B.
-                    next_label = lb;
-                    j += 1;
-                }
-                (None, None) => break,
-            }
-
-            result_data.push(*next_label);
-        }
-
-        // 3. Push the new Labels (C) onto the stack
-        self.stack
-            .push(Operand::Labels(Labels { data: result_data }));
-
-        Ok(())
-    }
-
-    fn zeros(&mut self, labels_pos: usize) -> Result<(), ErrorCode> {
-        let current_len = self.stack.len();
-        if current_len == 0 {
-            return Err(ErrorCode::StackUnderflow);
-        }
-
-        // --- 1. Calculate Absolute Index and Borrow Labels ---
-        // labels_pos is relative to the stack end (len - 1).
-        let last_idx = current_len - 1;
-        let abs_idx = last_idx
-            .checked_sub(labels_pos)
-            .ok_or(ErrorCode::OutOfRange)?;
-
-        // Borrow the Labels operand immutably
-        let labels_op = self.stack.get(abs_idx).ok_or(ErrorCode::OutOfRange)?;
-
-        // 2. Extract the length from the Labels operand
-        let labels_len = match labels_op {
+        let num_cols = match labels {
+            Operand::Vector(v) => v.data.len(),
             Operand::Labels(l) => l.data.len(),
             _ => return Err(ErrorCode::InvalidOperand), // Must be a Labels operand
         };
 
-        // 3. Create the Default Vector (filled with Amount::ZERO)
-        // Vector::new(len, Amount::ZERO) is conceptually what we're doing.
-        let default_data = vec![Amount::ZERO; labels_len];
-
-        // 4. Push the new Vector onto the stack
-        self.stack
-            .push(Operand::Vector(Vector { data: default_data }));
+        self.stack.push(Operand::Vector(Vector {
+            data: vec![Amount::ZERO; num_cols],
+        }));
 
         Ok(())
     }
 
-    fn ones(&mut self, labels_pos: usize) -> Result<(), ErrorCode> {
-        let current_len = self.stack.len();
-        if current_len == 0 {
-            return Err(ErrorCode::StackUnderflow);
-        }
+    fn ones(&mut self, pos: usize) -> Result<(), ErrorCode> {
+        let stack_index = self.get_stack_index(pos)?;
+        let labels = self.stack.get(stack_index).ok_or(ErrorCode::OutOfRange)?;
 
-        // 1. Calculate Absolute Index and Borrow Labels
-        let last_idx = current_len - 1;
-        let abs_idx = last_idx
-            .checked_sub(labels_pos)
-            .ok_or(ErrorCode::OutOfRange)?;
-
-        let labels_op = self.stack.get(abs_idx).ok_or(ErrorCode::OutOfRange)?;
-
-        // 2. Extract the length from the Labels operand
-        let labels_len = match labels_op {
+        let num_cols = match labels {
+            Operand::Vector(v) => v.data.len(),
             Operand::Labels(l) => l.data.len(),
-            _ => return Err(ErrorCode::InvalidOperand),
+            _ => return Err(ErrorCode::InvalidOperand), // Must be a Labels operand
         };
 
-        // 3. Create the Vector of Ones
-        // Note: This relies on Amount::ONE being available in scope.
-        let one_data = vec![Amount::ONE; labels_len];
-
-        // 4. Push the new Vector onto the stack
-        self.stack.push(Operand::Vector(Vector { data: one_data }));
+        self.stack.push(Operand::Vector(Vector {
+            data: vec![Amount::ONE; num_cols],
+        }));
 
         Ok(())
     }
@@ -911,6 +767,83 @@ impl Stack {
             .ok_or_else(|| ErrorCode::StackUnderflow)?;
         let v2 = rest.get_mut(pos).ok_or_else(|| ErrorCode::OutOfRange)?;
         swap(v1, v2);
+        Ok(())
+    }
+
+    fn lunn(&mut self, pos: usize) -> Result<(), ErrorCode> {
+        let stack_index = self.get_stack_index(pos)?;
+
+        let (labels_a_op, rest) = self
+            .stack
+            .split_last_mut()
+            .ok_or_else(|| ErrorCode::StackUnderflow)?;
+
+        let labels_b_op = rest.get(stack_index).ok_or_else(|| ErrorCode::OutOfRange)?;
+
+        let labels_a = match labels_a_op {
+            Operand::Labels(l) => l,
+            _ => return Err(ErrorCode::InvalidOperand),
+        };
+        let labels_b = match labels_b_op {
+            Operand::Labels(l) => l,
+            _ => return Err(ErrorCode::InvalidOperand),
+        };
+
+        // Perform the Sorted Union Merge
+
+        let mut result_data: Vec<u128> =
+            Vec::with_capacity(labels_a.data.len() + labels_b.data.len());
+
+        let mut i = 0; // Pointer for A (Last)
+        let mut j = 0; // Pointer for B (Other)
+
+        while i < labels_a.data.len() || j < labels_b.data.len() {
+            let label_a = labels_a.data.get(i);
+            let label_b = labels_b.data.get(j);
+
+            let next_label: &u128;
+
+            match (label_a, label_b) {
+                (Some(la), Some(lb)) => {
+                    match la.cmp(lb) {
+                        Ordering::Less => {
+                            // Case 1: Label A is smaller. Take A. Advance A.
+                            next_label = la;
+                            i += 1;
+                        }
+                        Ordering::Equal => {
+                            // Case 2: Match. Take one (A). Advance both.
+                            next_label = la;
+                            i += 1;
+                            j += 1;
+                        }
+                        Ordering::Greater => {
+                            // Case 3: Label B is smaller. Take B. Advance B.
+                            next_label = lb;
+                            j += 1;
+                        }
+                    }
+                }
+                (Some(la), None) => {
+                    // Case 4: Reached end of B. Take A. Advance A.
+                    next_label = la;
+                    i += 1;
+                }
+                (None, Some(lb)) => {
+                    // Case 5: Reached end of A. Take B. Advance B.
+                    next_label = lb;
+                    j += 1;
+                }
+                (None, None) => break,
+            }
+
+            result_data.push(*next_label);
+        }
+
+        // 3. Push the new Labels (C) onto the stack
+        self.stack
+            .push(Operand::Labels(Labels { data: result_data }));
+
         Ok(())
     }
 
@@ -1073,6 +1006,7 @@ macro_rules! log_stack {
     ($($t:tt)*) => {};
 }
 
+
 #[cfg(test)]
 #[macro_export]
 macro_rules! log_stack {
@@ -1080,6 +1014,7 @@ macro_rules! log_stack {
         $crate::program::log_stack_fun($arg);
     };
 }
+
 
 impl<'vio, VIO> Program<'vio, VIO>
 where
@@ -1096,7 +1031,9 @@ where
     }
 
     fn execute_with_stack(&mut self, code: Vec<u128>, stack: &mut Stack) -> Result<(), ErrorCode> {
-        log_msg!("\n[Execute Program]");
+        log_msg!("\nvvv EXECUTE PROGRAM vvv");
+        log_stack!(&stack);
+
         let mut pc = 0;
         while pc < code.len() {
             let op_code = code[pc];
@@ -1184,6 +1121,11 @@ where
                 }
                 OP_UNPK => {
                     stack.unpk()?;
+                }
+                OP_T => {
+                    let count = code[pc] as usize;
+                    pc += 1;
+                    stack.transpose(count)?;
                 }
                 OP_ADD => {
                     let pos = code[pc] as usize;
@@ -1311,9 +1253,6 @@ where
                         log_msg!("^^^ Stack of the procedure\n\n");
                         return Err(err);
                     }
-                    log_msg!("\n\nProcedure complete:");
-                    log_stack!(&st);
-                    log_msg!("^^^ Stack of the procedure\n\n");
                     let frm = st
                         .stack
                         .len()
@@ -1369,6 +1308,8 @@ where
             }
         }
 
+        log_stack!(&stack);
+        log_msg!("\n^^^ PROGRAM ENDED ^^^");
         Ok(())
     }
 }
@@ -1380,11 +1321,8 @@ pub mod test {
     use alloy_primitives::U128;
     use deli::{amount::Amount, labels::Labels, log_msg, vector::Vector};
 
-    use crate::program::{
-        OP_ADD, OP_B, OP_DIV, OP_IMMS, OP_LDD, OP_LDR, OP_LDV, OP_VMIN, OP_MIN, OP_MUL, OP_PKV, OP_POP, OP_SQRT, OP_STR, OP_STV, OP_SUB, OP_SWAP, OP_UNPK, Program, Stack, VectorIO
-    };
-
     use super::ErrorCode;
+    use super::*; // Use glob import for tidiness
 
     struct TestVectorIO {
         labels: HashMap<U128, Labels>,
@@ -1439,7 +1377,7 @@ pub mod test {
     }
 
     #[test]
-    fn test_compute_1() -> Result<(), &'static str> {
+    fn test_compute_1() {
         let mut vio = TestVectorIO::new();
         let assets_id = U128::from(101);
         let weights_id = U128::from(102);
@@ -1454,7 +1392,7 @@ pub mod test {
                 data: vec![1001, 1002, 1003],
             },
         )
-        .map_err(|_| "Failed to store assets")?;
+        .unwrap();
 
         vio.store_vector(
             weights_id,
@@ -1466,7 +1404,7 @@ pub mod test {
                 ],
             },
         )
-        .map_err(|_| "Failed to store assets")?;
+        .unwrap();
 
         vio.store_vector(
             quote_id,
@@ -1478,7 +1416,7 @@ pub mod test {
                 ],
             },
         )
-        .map_err(|_| "Failed to store assets")?;
+        .unwrap();
 
         vio.store_vector(
             order_id,
@@ -1490,44 +1428,7 @@ pub mod test {
                 ],
             },
         )
-        .map_err(|_| "Failed to store assets")?;
-
-        #[rustfmt::skip]
-        let solve_quadratic_code = vec![
-            // 1. Initial Load and Setup (R1=S, R2=P, R3=C)
-            OP_STR, 1, // S -> R1, POP S
-            OP_STR, 2, // P -> R2, POP P
-            OP_STR, 3, // C -> R3, POP C
-
-            // 2. Compute P^2 (R4)
-            OP_LDR, 2, 
-            OP_MUL, 0, // P^2 = P * P
-            OP_STR, 4, // P^2 -> R4, POP P^2
-
-            // 3. Compute Radical (R5)
-            OP_LDR, 1, OP_LDR, 3, OP_MUL, 1, // [S, SC]
-            OP_IMMS, Amount::FOUR.to_u128_raw(), OP_MUL, 1, // [S, SC, 4SC]
-            OP_LDR, 4, // [S, SC, 4SC, P^2]
-            OP_ADD, 1, // [S, SC, 4SC, P^2+4SC]
-            OP_SQRT, // [S, SC, 4SC, R]
-            OP_STR, 5, // R -> R5, POP R
-
-            // 4. Compute Numerator: Radical - min(Radical, P)
-            OP_LDR, 5, OP_LDR, 2, // [..., R, P]
-            OP_PKV, 2, OP_VMIN, // [..., min(R, P)] - R and P popped by OP_PKV
-            OP_STR, 6, // min -> R6, POP min
-            
-            // // Perform subtraction: R - min
-            OP_LDR, 5, OP_LDR, 6, // [..., R, min]
-            OP_SWAP, 1, // [..., min, R]
-            OP_SUB, 1, // [..., min, N]
-
-            // // 5. Compute X = Num / 2S
-            OP_LDR, 1, OP_IMMS, Amount::TWO.to_u128_raw(), OP_MUL, 1, // [..., min, N, S, 2S]
-            OP_SWAP, 2, // [..., 2S, S, N]. Move N to TOS.
-            OP_DIV, 2, // [..., 2S, S, X]. TOS = N / 2S.
-            // // The final result X is now at the top of the stack.
-        ];
+        .unwrap();
 
         #[rustfmt::skip]
         let solve_quadratic_vectorized = vec![
@@ -1568,11 +1469,10 @@ pub mod test {
         vio.store_labels(
             solve_quadratic_id,
             Labels {
-                // data: solve_quadratic_code,
                 data: solve_quadratic_vectorized,
             },
         )
-        .map_err(|_| "Failed to store procedure")?;
+        .unwrap();
 
         let reg_weights = 0;
         let reg_collateral = 1;
@@ -1582,24 +1482,30 @@ pub mod test {
 
         #[rustfmt::skip]
         let code = vec![
-            OP_LDV, weights_id.to::<u128>(),
-            OP_STR, reg_weights,
-            OP_LDV, order_id.to::<u128>(),
-            OP_UNPK,
-            OP_POP, 2,
-            OP_STR, reg_collateral,
-            OP_LDV, quote_id.to::<u128>(),
-            OP_UNPK,
-            OP_STR, reg_slope,
-            OP_STR, reg_price,
-            OP_STR, reg_capacity,
-            OP_LDR, reg_collateral,
-            OP_LDR, reg_price,
-            OP_LDR, reg_slope,
-            OP_B, solve_quadratic_id.to::<u128>(), 3, 1, 8, // quantity for collateral, price, and slope
-            OP_LDR, reg_weights,
-            OP_MUL, 1, // asset quantities
-            OP_STV, order_quantities_id.to::<u128>(),
+            OP_LDV, weights_id.to::<u128>(), // Stack: [AW]
+            OP_STR, reg_weights,             // Stack: []
+            
+            // Extract Collateral (Order vector: [Collateral, Spent, Minted])
+            OP_LDV, order_id.to::<u128>(),   // Stack: [O]
+            OP_UNPK,                         // Stack: [Minted, Spent, Collateral]
+            OP_POP, 2,                       // Stack: [Collateral]
+            OP_STR, reg_collateral,          // Stack: []
+
+            // Extract Price and Slope (Quote vector: [Capacity, Price, Slope])
+            OP_LDV, quote_id.to::<u128>(),   // Stack: [Q]
+            OP_UNPK,                         // Stack: [Slope, Price, Capacity]
+            OP_POP, 1,                       // Stack: [Slope, Price] (Capacity discarded)
+
+            // Stack is now [Slope, Price]. Load Collateral to get arguments in order.
+            OP_LDR, reg_collateral,          // Stack: [Slope, Price, Collateral]
+            
+            // Call procedure: Inputs are Collateral (TOS), Price, Slope.
+            OP_B, solve_quadratic_id.to::<u128>(), 3, 1, 8, // Stack: [IndexQuantity]
+
+            // Apply Weights and Store Result
+            OP_LDR, reg_weights,             // Stack: [IQ, AW]
+            OP_MUL, 1,                       // Stack: [AssetQuantities]
+            OP_STV, order_quantities_id.to::<u128>(), // Stack: []
         ];
 
         let num_registers = 8;
@@ -1608,32 +1514,108 @@ pub mod test {
         let mut stack = Stack::new(num_registers);
         let result = program.execute_with_stack(code, &mut stack);
 
-        log_stack!(&stack);
+        if let Err(err) = result {
+            log_stack!(&stack);
+            panic!("Failed to execute test: {:?}", err);
+        }
 
-        result.map_err(|_| "Failed to execute program")?;
-
-        let order = vio
-            .load_vector(order_id)
-            .map_err(|_| "Failed to load order")?;
-
-        let quote = vio
-            .load_vector(quote_id)
-            .map_err(|_| "Failed to load quote")?;
-
-        let weigths = vio
-            .load_vector(weights_id)
-            .map_err(|_| "Failed to load weights")?;
-
-        let order_quantites = vio
-            .load_vector(order_quantities_id)
-            .map_err(|_| "Failed to load order quantities")?;
+        let order = vio.load_vector(order_id).unwrap();
+        let quote = vio.load_vector(quote_id).unwrap();
+        let weigths = vio.load_vector(weights_id).unwrap();
+        let order_quantites = vio.load_vector(order_quantities_id).unwrap();
 
         log_msg!("\n-= Program complete =-");
         log_msg!("[in] Order = {:0.9}", order);
         log_msg!("[in] Quote = {:0.9}", quote);
         log_msg!("[in] Weights = {:0.9}", weigths);
         log_msg!("[out] Order Quantities = {:0.9}", order_quantites);
+    }
 
-        Ok(())
+    #[test]
+    fn test_transpose() {
+        let mut vio = TestVectorIO::new();
+        let num_registers = 8;
+
+        // Utility to create a readable Amount (e.g., 5 is "5.0")
+        let a = |x: u128| Amount::from_u128_with_scale(x, 0);
+
+        // --- 1. Setup VIO Inputs ---
+        let vector1_id = U128::from(100);
+        let vector2_id = U128::from(101);
+        let expected1_id = U128::from(102); // T1: [1, 4]
+        let expected2_id = U128::from(103); // T2: [2, 5]
+        let expected3_id = U128::from(104); // T3: [3, 6]
+        let delta_id = U128::from(105);
+
+        // V1: [1.0, 2.0, 3.0]
+        let v1 = Vector {
+            data: vec![a(1), a(2), a(3)],
+        };
+        // V2: [4.0, 5.0, 6.0]
+        let v2 = Vector {
+            data: vec![a(4), a(5), a(6)],
+        };
+
+        // Expected Transposed Columns (T1, T2, T3)
+        let t1_expected = Vector {
+            data: vec![a(1), a(4)],
+        };
+        let t2_expected = Vector {
+            data: vec![a(2), a(5)],
+        };
+        let t3_expected = Vector {
+            data: vec![a(3), a(6)],
+        };
+
+        vio.store_vector(vector1_id, v1).unwrap();
+        vio.store_vector(vector2_id, v2).unwrap();
+        vio.store_vector(expected1_id, t1_expected).unwrap();
+        vio.store_vector(expected2_id, t2_expected).unwrap();
+        vio.store_vector(expected3_id, t3_expected).unwrap();
+
+        // --- 2. VIL Code Execution ---
+        #[rustfmt::skip]
+        let code = vec![
+            // 1. Setup Transposition
+            OP_LDV, vector1_id.to::<u128>(), // Stack: [V1]
+            OP_LDV, vector2_id.to::<u128>(), // Stack: [V1, V2]
+            OP_T, 2,                         // Stack: [T1, T2, T3] (3 vectors)
+
+            // 2. Load Expected Vectors for comparison
+            OP_LDV, expected1_id.to::<u128>(), // [T1, T2, T3, E1]
+            OP_LDV, expected2_id.to::<u128>(), // [T1, T2, T3, E1, E2]
+            OP_LDV, expected3_id.to::<u128>(), // [T1, T2, T3, E1, E2, E3] (6 vectors)
+
+            // 3. D3 = T3 - E3
+            OP_SUB, 3,                         // Stack: [T1, T2, T3, E1, E2, D3]
+            
+            // 4. D2 = T2 - E2
+            OP_SWAP, 1,                        // Stack: [T1, T2, T3, E1, D3, E2]
+            OP_SUB, 4,                         // Stack: [T1, T2, T3, E1, D3, D2]
+
+            // 5. D1 = T1 - E1
+            OP_SWAP, 2,                        // Stack: [T1, T2, T3, D2, D3, E1]
+            OP_SUB, 5,                         // Stack: [T1, T2, T3, D2, D3, D1]
+
+            // 6. Compute total delta - should be zero
+            OP_ADD, 1,                         // Stack: [T1, T2, T3, D2, D3, D1 + D3]
+            OP_ADD, 2,                         // Stack: [T1, T2, T3, D2, D3, D1 + D3 + D2]
+            
+            // 7. Store the final zero vector
+            OP_STV, delta_id.to::<u128>(),
+        ];
+
+        let mut stack = Stack::new(num_registers);
+        let mut program = Program::new(&mut vio);
+
+        if let Err(err) = program.execute_with_stack(code, &mut stack) {
+            log_stack!(&stack);
+            panic!("Failed to execute test: {:?}", err);
+        }
+
+        // --- 3. Assertion ---
+        let delta = vio.load_vector(delta_id).unwrap();
+
+        assert_eq!(delta.data, vec![Amount::ZERO; 2]);
     }
 }
