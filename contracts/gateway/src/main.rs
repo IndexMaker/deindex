@@ -6,5 +6,5 @@ pub extern "C" fn main() {}
 
 #[cfg(feature = "export-abi")]
 fn main() {
-    disolver::print_from_args();
+    gateway::print_from_args();
 }
