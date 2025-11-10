@@ -1147,13 +1147,6 @@ where
                     pc += 1;
                     stack.jxpnd(pos_1, pos_2)?;
                 }
-                OP_JXPND => {
-                    let pos_1 = code[pc] as usize;
-                    pc += 1;
-                    let pos_2 = code[pc] as usize;
-                    pc += 1;
-                    stack.jxpnd(pos_1, pos_2)?;
-                }
                 OP_JFLTR => {
                     let pos_1 = code[pc] as usize;
                     pc += 1;
