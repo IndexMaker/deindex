@@ -84,6 +84,13 @@ impl Amount {
         Some(Self(try_convert_to_u128(result)?))
     }
 
+    pub fn saturating_sub(self, rhs: Self) -> Option<Self> {
+        let a = self.to_u256();
+        let b = rhs.to_u256();
+        let result = a - a.min(b);
+        Some(Self(try_convert_to_u128(result)?))
+    }
+
     pub fn checked_mul(self, rhs: Self) -> Option<Self> {
         let result = (self.to_u256() * rhs.to_u256()) / Self::u256_scale();
         Some(Self(try_convert_to_u128(result)?))
@@ -110,7 +117,7 @@ impl Amount {
     pub fn is_less_than(&self, other: &Self) -> bool {
         self.0 < other.0
     }
-    
+
     #[inline]
     pub fn min(&self, other: &Self) -> Self {
         if self.is_less_than(other) {
