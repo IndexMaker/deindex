@@ -57,6 +57,16 @@ impl Labels {
     }
 }
 
+#[macro_export]
+macro_rules! label {
+    () => {
+        0u128
+    };
+    ($num:expr) => {
+        ($num as u128)
+    }
+}
+
 #[cfg(any(not(feature = "stylus"), feature = "debug"))]
 impl core::fmt::Display for Labels {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {

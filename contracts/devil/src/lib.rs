@@ -18,6 +18,9 @@ use crate::program::{ErrorCode, Program, VectorIO};
 
 pub mod program;
 
+#[cfg(test)]
+pub mod test;
+
 #[storage]
 #[entrypoint]
 pub struct Devil {
@@ -37,41 +40,41 @@ impl Devil {
 }
 
 impl VectorIO for Devil {
-    fn load_labels(&self, id: U128) -> Result<Labels, ErrorCode> {
-        let vector = self.vectors.getter(id);
+    fn load_labels(&self, id: u128) -> Result<Labels, ErrorCode> {
+        let vector = self.vectors.getter(U128::from(id));
         if vector.is_empty() {
             Err(ErrorCode::NotFound)?;
         }
         Ok(Labels::from_vec(vector.get_bytes()))
     }
 
-    fn load_vector(&self, id: U128) -> Result<Vector, ErrorCode> {
-        let vector = self.vectors.getter(id);
+    fn load_vector(&self, id: u128) -> Result<Vector, ErrorCode> {
+        let vector = self.vectors.getter(U128::from(id));
         if vector.is_empty() {
             Err(ErrorCode::NotFound)?;
         }
         Ok(Vector::from_vec(vector.get_bytes()))
     }
 
-    fn load_scalar(&self, id: U128) -> Result<Amount, ErrorCode> {
-        let scalar = self.scalars.getter(id);
+    fn load_scalar(&self, id: u128) -> Result<Amount, ErrorCode> {
+        let scalar = self.scalars.getter(U128::from(id));
         Ok(Amount::from_u128(scalar.get()))
     }
 
-    fn store_labels(&mut self, id: U128, input: Labels) -> Result<(), ErrorCode> {
-        let mut vector = self.vectors.setter(id);
+    fn store_labels(&mut self, id: u128, input: Labels) -> Result<(), ErrorCode> {
+        let mut vector = self.vectors.setter(U128::from(id));
         vector.set_bytes(input.to_vec());
         Ok(())
     }
 
-    fn store_vector(&mut self, id: U128, input: Vector) -> Result<(), ErrorCode> {
-        let mut vector = self.vectors.setter(id);
+    fn store_vector(&mut self, id: u128, input: Vector) -> Result<(), ErrorCode> {
+        let mut vector = self.vectors.setter(U128::from(id));
         vector.set_bytes(input.to_vec());
         Ok(())
     }
 
-    fn store_scalar(&mut self, id: U128, input: Amount) -> Result<(), ErrorCode> {
-        let mut scalar = self.scalars.setter(id);
+    fn store_scalar(&mut self, id: u128, input: Amount) -> Result<(), ErrorCode> {
+        let mut scalar = self.scalars.setter(U128::from(id));
         scalar.set(input.to_u128());
         Ok(())
     }
@@ -113,6 +116,3 @@ impl Devil {
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod test {}
