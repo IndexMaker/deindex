@@ -41,7 +41,7 @@ pub fn execute_buy_order(
         STR         _IndexQuantity      // Stack: []
 
         // Cap Index Quantity with Capacity
-        LDM         _Capacity               // Stack: [Capacity, IndexQuantity]
+        LDM         _Capacity               // Stack: [Capacity]
         LDR         _IndexQuantity          // Stack: [Capacity, IndexQuantity]
         MIN         1                       // Stack: [Capacity, CappedIndexQuantity]
         SWAP        1                       // Stack: [CappedIndexQuantity, Capacity]
