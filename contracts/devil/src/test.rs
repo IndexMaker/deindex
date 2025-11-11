@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use deli::{amount::Amount, labels::Labels, log_msg, vector::Vector, vis::*};
+use deli::{labels::Labels, log_msg, vector::Vector};
 use devil_macros::devil;
 use icore::vil::execute_buy_order::execute_buy_order;
 use icore::vil::solve_quadratic::solve_quadratic;

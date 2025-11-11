@@ -813,11 +813,11 @@ impl Stack {
 #[cfg(test)]
 pub(crate) fn log_stack_fun(stack: &Stack) {
     log_msg!("\n[REGISTRY]");
-    for i in 0..stack.registry.len() {
+    for _i in 0..stack.registry.len() {
         log_msg!(
             "[{}] {}",
-            i,
-            match &stack.registry[i] {
+            _i,
+            match &stack.registry[_i] {
                 Operand::None => format!("None"),
                 Operand::Labels(labels) => format!("Labels: {}", *labels),
                 Operand::Vector(vector) => format!("Vector: {:0.5}", *vector),
@@ -828,11 +828,11 @@ pub(crate) fn log_stack_fun(stack: &Stack) {
     }
 
     log_msg!("\n[STACK]");
-    for i in 0..stack.stack.len() {
+    for _i in 0..stack.stack.len() {
         log_msg!(
             "[{}] {}",
-            i,
-            match &stack.stack[i] {
+            _i,
+            match &stack.stack[_i] {
                 Operand::None => format!("None"),
                 Operand::Labels(labels) => format!("Labels: {}", *labels),
                 Operand::Vector(vector) => format!("Vector: {:0.5}", *vector),

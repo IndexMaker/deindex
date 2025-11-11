@@ -68,14 +68,14 @@ async fn main() -> eyre::Result<()> {
     let rpc_url = cli.rpc_url.unwrap_or("http://localhost:8547".to_owned());
 
     let provider = Provider::<Http>::try_from(rpc_url)?;
-    let disolver_address: Address = cli.disolver_address.parse()?;
-    let dior_address: Address = cli.dior_address.parse()?;
-    let dimer_address: Address = cli.dimer_address.parse()?;
+    let _disolver_address: Address = cli.disolver_address.parse()?;
+    let _dior_address: Address = cli.dior_address.parse()?;
+    let _dimer_address: Address = cli.dimer_address.parse()?;
 
     let priv_key = get_private_key();
     let wallet = LocalWallet::from_str(&priv_key)?;
     let chain_id = provider.get_chainid().await?.as_u64();
-    let client = Arc::new(SignerMiddleware::new(
+    let _client = Arc::new(SignerMiddleware::new(
         provider,
         wallet.clone().with_chain_id(chain_id),
     ));

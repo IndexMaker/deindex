@@ -3,7 +3,7 @@ use proc_macro2::{TokenStream as TokenStream2, Span, TokenTree};
 use quote::{quote, ToTokens};
 use syn::{
     parse::{Parse, ParseStream},
-    Error, Expr, Ident, Lit, Token,
+    Expr, Ident, Lit, Token,
 };
 use std::collections::HashMap;
 
@@ -209,7 +209,7 @@ pub fn devil(input: TokenStream) -> TokenStream {
     for instruction in instruction_list.instructions {
         let op_code = format!("OP_{}", instruction.mnemonic.to_string().to_uppercase());
         let op_code_ident = Ident::new(&op_code, Span::call_site());
-        final_tokens.extend(quote! { #op_code_ident, });
+        final_tokens.extend(quote! { deli::vis::#op_code_ident, });
 
         for arg in instruction.args {
             let arg_tokens = match arg {
