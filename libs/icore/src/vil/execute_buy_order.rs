@@ -35,9 +35,14 @@ pub fn execute_buy_order(
         UNPK                                    // Stack: [Capacity, Price, Slope]
         SWAP        2                           // Stack: [Slope, Price, Capacity]
         STR         _Capacity                   // Stack: [Slope, Price]
-        LDM         _Collateral                 // Stack: [Slope, Price, Collateral]
-
-        B  solve_quadratic_id  3  1  4          // Stack: [IndexQuantity]
+        STR         _Price                      // Stack: [Slope]
+        STR         _Slope                      // Stack: []
+        
+        // Solve Quadratic: S * Q^2 + P * Q - C = 0
+        LDR         _Slope                      // Stack: [Slope]
+        LDR         _Price                      // Stack: [Slope, Price]
+        LDR         _Collateral                 // Stack: [Slope, Price, Collateral]
+        B           solve_quadratic_id  3  1  4 // Stack: [IndexQuantity]
         STR         _IndexQuantity              // Stack: []
 
         // Cap Index Quantity with Capacity
@@ -121,8 +126,36 @@ pub fn execute_buy_order(
         STV         delta_short_id
         STV         delta_long_id
 
+        // Compute Collateral Spent
+        LDR         _CappedIndexQuantity            // Stack: [CIQ]
+        LDM         _Slope                          // Stack: [CIQ, Slope]
+        MUL         1                               // Stack: [CIQ, SQ = (S * Q)]
+        LDM         _Price                          // Stack: [CIQ, SQ, Price]
+        ADD         1                               // Stack: [CIQ, SQ, EP = (SQ + Price)]
+        SWAP        1                               // Stack: [CIQ, EP, SQ]
+        POPN        1                               // Stack: [CIQ, EP] 
+        MUL         1                               // Stack: [CIQ, CS = (CIQ * EP)]
+        
+        // Compute Order Remaining Collateral 
+        LDM         _Collateral                     // Stack: [CIQ, CS, C]
+        SSB         1                               // Stack: [CIQ, CS, CR = (C - CS)]
+        SWAP        1                               // Stack: [CIQ, CR, CS]
+
+        // Compute Order Spent Collateral
+        LDM         _Spent                          // Stack: [CIQ, CR, CS, CS_old]
+        ADD         1                               // Stack: [CIQ, CR, CS, CS_new = (CS_old + CS)]
+        SWAP        1                               // Stack: [CIQ, CR, CS_new, CS]
+        POPN        1                               // Stack: [CIQ, CR, CS_new]
+        SWAP        1                               // Stack: [CIQ, CS_new, CR]
+        SWAP        2                               // Stack: [CR, CS_new, CIQ]
+
+        // Store Updated Order 
+        PKV         3                               // Stack: [(CR, CS_new, CIQ)]
+        STV         order_id                        // Stack: []
+
+
         // Store Executed Index Quantity and Remaining Quantity
-        LDM         _CappedIndexQuantity            // Stack: [CIQ] 
+        LDM         _CappedIndexQuantity            // Stack: [CIQ]
         LDM         _IndexQuantity                  // Stack: [CIQ, IndexQuantity]
         SUB         1                               // Stack: [CIQ, RIQ = (IndexQuantity - CIQ)]
         PKV         2                               // Stack: [(CIQ, RIQ)]

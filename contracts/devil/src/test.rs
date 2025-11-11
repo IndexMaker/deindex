@@ -149,6 +149,8 @@ fn test_compute_1() {
         solve_quadratic_id,
     );
 
+    let order_before = vio.load_vector(index_order_id).unwrap();
+
     let num_registers = 16;
 
     let mut program = Program::new(&mut vio);
@@ -160,7 +162,7 @@ fn test_compute_1() {
         panic!("Failed to execute test: {:?}", err);
     }
 
-    let order = vio.load_vector(index_order_id).unwrap();
+    let order_after = vio.load_vector(index_order_id).unwrap();
     let quote = vio.load_vector(quote_id).unwrap();
     let weigths = vio.load_vector(weights_id).unwrap();
     let index_quantites = vio.load_vector(executed_index_quantities_id).unwrap();
@@ -171,21 +173,26 @@ fn test_compute_1() {
     let delta_long = vio.load_vector(delta_long_id).unwrap();
 
     log_msg!("\n-= Program complete =-");
-    log_msg!("\n[in] Index Order = {:0.9}", order);
+    log_msg!("\n[in] Index Order = {:0.9}", order_before);
     log_msg!("[in] Index Quote = {:0.9}", quote);
     log_msg!("[in] Asset Weights = {:0.9}", weigths);
-    log_msg!("\n[out] Index Quantities = {:0.9}", index_quantites);
+    log_msg!("\n[out] Index Order = {:0.9}", order_after);
+    log_msg!("[out] Index Quantities = {:0.9}", index_quantites);
     log_msg!("[out] Asset Quantities = {:0.9}", asset_quantites);
     log_msg!("\n[out] Demand Short = {:0.9}", demand_short);
     log_msg!("[out] Demand Long = {:0.9}", demand_long);
     log_msg!("\n[out] Delta Short = {:0.9}", delta_short);
     log_msg!("[out] Delta Long = {:0.9}", delta_long);
 
-    assert_eq!(order.data, amount_vec![1000, 0, 0].data);
+    assert_eq!(order_before.data, amount_vec![1000, 0, 0].data);
     assert_eq!(quote.data, amount_vec![10, 10_000, 100].data);
     assert_eq!(weigths.data, amount_vec![0.1, 1, 100,].data);
 
     // these are exact expected fixed point decimal values as raw u128
+    assert_eq!(
+        order_after.data,
+        amount_vec![0.000000013986019975, 999.999999986013980025, 0.0999001995].data
+    );
     assert_eq!(
         index_quantites.data,
         amount_vec![0.0999001995, 0.000000000].data
