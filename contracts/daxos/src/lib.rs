@@ -174,15 +174,39 @@ impl Daxos {
             collateral_amount,
         };
         self.vm().call(&self, vault_address, &submit.abi_encode())?;
-        let [order_id, weights_id, quote_id, solve_quadratic_id, order_quantities_id] = [0; 5];
+
+        // TODO: We need to set these up. They are from Vault and Gateway.
+        let index_order_id = 10001;
+        let executed_asset_quantities_id = 10002;
+        let executed_index_quantities_id = 10003;
+        let asset_names_id = 1001;
+        let weights_id = 1002;
+        let quote_id = 1003;
+        let inventory_asset_names_id = 101;
+        let supply_long_id = 102;
+        let supply_short_id = 103;
+        let demand_long_id = 104;
+        let demand_short_id = 105;
+        let delta_long_id = 106;
+        let delta_short_id = 107;
+        let solve_quadratic_id = 10;
 
         // TODO: get those from Vault and Gateway
         let update = execute_buy_order(
-            order_id,
+            index_order_id,
+            executed_index_quantities_id,
+            executed_asset_quantities_id,
+            asset_names_id,
             weights_id,
             quote_id,
+            inventory_asset_names_id,
+            supply_long_id,
+            supply_short_id,
+            demand_long_id,
+            demand_short_id,
+            delta_long_id,
+            delta_short_id,
             solve_quadratic_id,
-            order_quantities_id,
         );
         let num_registry = 16;
         self.send_to_devil(update, num_registry)?;

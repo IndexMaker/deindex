@@ -1,4 +1,3 @@
-use deli::{amount::*, vis::*};
 use devil_macros::devil;
 
 /// Solve Index Quantity Equation: (S, P, C) -> Q = C / (P + S * Q)

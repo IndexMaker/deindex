@@ -3,7 +3,7 @@ use proc_macro2::{TokenStream as TokenStream2, Span, TokenTree};
 use quote::{quote, ToTokens};
 use syn::{
     parse::{Parse, ParseStream},
-    Error, Expr, Ident, Lit, Token,
+    Expr, Ident, Lit, Token,
 };
 use std::collections::HashMap;
 
@@ -30,7 +30,6 @@ lazy_static::lazy_static! {
         // 1. Data Loading & Stack Access (10-14)
         m.insert("LDL", vec![StorageId]);  
         m.insert("LDV", vec![StorageId]);  
-        m.insert("LDS", vec![StorageId]);  
         m.insert("LDD", vec![StackPos]);   
         m.insert("LDR", vec![RegisterId]); 
         m.insert("LDM", vec![RegisterId]); 
@@ -38,7 +37,6 @@ lazy_static::lazy_static! {
         // 2. Data Storage & Register Access (20-23)
         m.insert("STL", vec![StorageId]);  
         m.insert("STV", vec![StorageId]);  
-        m.insert("STS", vec![StorageId]);  
         m.insert("STR", vec![RegisterId]);
 
         // 3. Data Structure Manipulation (30-35)
@@ -53,10 +51,9 @@ lazy_static::lazy_static! {
         m.insert("LUNION", vec![StackPos]);
         m.insert("LPUSH", vec![Label]);    // <immediate (label)>
         m.insert("LPOP", vec![]);
-        m.insert("JADD", vec![StackPos, StackPos]); 
-        m.insert("JSSB", vec![StackPos, StackPos]);
-        m.insert("JXPND", vec![StackPos, StackPos]);
-        m.insert("JFLTR", vec![StackPos, StackPos]);
+        m.insert("JUPD", vec![StackPos, StackPos, StackPos]);
+        m.insert("JADD", vec![StackPos, StackPos, StackPos]); 
+        m.insert("JFLT", vec![StackPos, StackPos]);
         
         // 5. Arithmetic & Core Math (50-55)
         m.insert("ADD", vec![StackPos]);   
@@ -212,7 +209,7 @@ pub fn devil(input: TokenStream) -> TokenStream {
     for instruction in instruction_list.instructions {
         let op_code = format!("OP_{}", instruction.mnemonic.to_string().to_uppercase());
         let op_code_ident = Ident::new(&op_code, Span::call_site());
-        final_tokens.extend(quote! { #op_code_ident, });
+        final_tokens.extend(quote! { deli::vis::#op_code_ident, });
 
         for arg in instruction.args {
             let arg_tokens = match arg {

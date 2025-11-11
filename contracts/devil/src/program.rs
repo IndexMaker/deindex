@@ -38,11 +38,9 @@ impl Debug for ErrorCode {
 pub trait VectorIO {
     fn load_labels(&self, id: u128) -> Result<Labels, ErrorCode>;
     fn load_vector(&self, id: u128) -> Result<Vector, ErrorCode>;
-    fn load_scalar(&self, id: u128) -> Result<Amount, ErrorCode>;
 
     fn store_labels(&mut self, id: u128, input: Labels) -> Result<(), ErrorCode>;
     fn store_vector(&mut self, id: u128, input: Vector) -> Result<(), ErrorCode>;
-    fn store_scalar(&mut self, id: u128, input: Amount) -> Result<(), ErrorCode>;
 }
 
 pub struct Program<'vio, VIO>
@@ -76,7 +74,7 @@ impl Clone for Operand {
     }
 }
 
-pub (crate) struct Stack {
+pub(crate) struct Stack {
     stack: Vec<Operand>,
     registry: Vec<Operand>,
 }
@@ -575,15 +573,10 @@ impl Stack {
             .split_last_mut()
             .ok_or_else(|| ErrorCode::StackUnderflow)?;
 
-        let v2 = rest
-            .get(stack_index)
-            .ok_or_else(|| ErrorCode::OutOfRange)?;
+        let v2 = rest.get(stack_index).ok_or_else(|| ErrorCode::OutOfRange)?;
 
         match (v1, v2) {
-            (
-                Operand::Labels(labels_a),
-                Operand::Labels(labels_b),
-            ) => {
+            (Operand::Labels(labels_a), Operand::Labels(labels_b)) => {
                 let mut result = Vec::new();
                 let mut j = 0;
                 for i in 0..labels_a.data.len() {
@@ -616,7 +609,12 @@ impl Stack {
         Ok(())
     }
 
-    fn jadd(&mut self, pos_labels_a: usize, pos_labels_b: usize) -> Result<(), ErrorCode> {
+    fn jupd(
+        &mut self,
+        pos_vector_b: usize,
+        pos_labels_a: usize,
+        pos_labels_b: usize,
+    ) -> Result<(), ErrorCode> {
         if pos_labels_a == pos_labels_b {
             // If both vectors use same labels, then it's just normal vector add
             return self.add(1);
@@ -625,7 +623,78 @@ impl Stack {
             // [TOS - 1, TOS] are reserved for values
             Err(ErrorCode::InvalidOperand)?;
         }
-        let stack_index_v2 = self.get_stack_index(1)?;
+        let stack_index_v2 = self.get_stack_index(pos_vector_b)?;
+        let stack_index_labels_a = self.get_stack_index(pos_labels_a)?;
+        let stack_index_labels_b = self.get_stack_index(pos_labels_b)?;
+        let (v1, rest) = self
+            .stack
+            .split_last_mut()
+            .ok_or_else(|| ErrorCode::StackUnderflow)?;
+
+        let v2 = rest
+            .get(stack_index_v2)
+            .ok_or_else(|| ErrorCode::OutOfRange)?;
+        let labels_a = &rest[stack_index_labels_a];
+        let labels_b = &rest[stack_index_labels_b];
+
+        match (v1, v2, labels_a, labels_b) {
+            (
+                Operand::Vector(v1),
+                Operand::Vector(v2),
+                Operand::Labels(labels_a),
+                Operand::Labels(labels_b),
+            ) => {
+                if v1.data.len() != labels_a.data.len() {
+                    Err(ErrorCode::InvalidOperand)?;
+                }
+                if v2.data.len() != labels_b.data.len() {
+                    Err(ErrorCode::InvalidOperand)?;
+                }
+                let mut j = 0;
+                for i in 0..labels_a.data.len() {
+                    let label_a = labels_a.data[i];
+                    while j < labels_b.data.len() {
+                        let label_b = labels_b.data[j];
+                        if label_b < label_a {
+                            // Label B not in A. This is an error, as we are not
+                            // extending A, and value would be missing. A must
+                            // have at least all same labels as B or more
+                            // labels.
+                            Err(ErrorCode::MathUnderflow)?
+                        } else if label_a < label_b {
+                            // Label A not in B.  Preserve value in A, as A + None = A
+                            break;
+                        } else {
+                            // Found matching label in B. Sum values in-place: A <- A + B
+                            v1.data[i] = v2.data[j];
+                            j += 1;
+                            break;
+                        }
+                    }
+                    // NOTE: if we didn't match any label in B, then preserve value in A, as A + None = A
+                }
+            }
+            _ => Err(ErrorCode::InvalidOperand)?,
+        }
+
+        Ok(())
+    }
+
+    fn jadd(
+        &mut self,
+        pos_vector_b: usize,
+        pos_labels_a: usize,
+        pos_labels_b: usize,
+    ) -> Result<(), ErrorCode> {
+        if pos_labels_a == pos_labels_b {
+            // If both vectors use same labels, then it's just normal vector add
+            return self.add(1);
+        }
+        if pos_labels_a < 2 || pos_labels_b < 2 {
+            // [TOS - 1, TOS] are reserved for values
+            Err(ErrorCode::InvalidOperand)?;
+        }
+        let stack_index_v2 = self.get_stack_index(pos_vector_b)?;
         let stack_index_labels_a = self.get_stack_index(pos_labels_a)?;
         let stack_index_labels_b = self.get_stack_index(pos_labels_b)?;
         let (v1, rest) = self
@@ -685,80 +754,10 @@ impl Stack {
         Ok(())
     }
 
-     fn jssb(&mut self, pos_labels_a: usize, pos_labels_b: usize) -> Result<(), ErrorCode> {
-        if pos_labels_a == pos_labels_b {
-            // If both vectors use same labels, then it's just normal vector add
-            return self.add(1);
-        }
-        if pos_labels_a < 2 || pos_labels_b < 2 {
-            // [TOS - 1, TOS] are reserved for values
-            Err(ErrorCode::InvalidOperand)?;
-        }
-        let stack_index_v2 = self.get_stack_index(1)?;
-        let stack_index_labels_a = self.get_stack_index(pos_labels_a)?;
-        let stack_index_labels_b = self.get_stack_index(pos_labels_b)?;
-        let (v1, rest) = self
-            .stack
-            .split_last_mut()
-            .ok_or_else(|| ErrorCode::StackUnderflow)?;
-
-        let v2 = rest
-            .get(stack_index_v2)
-            .ok_or_else(|| ErrorCode::OutOfRange)?;
-        let labels_a = &rest[stack_index_labels_a];
-        let labels_b = &rest[stack_index_labels_b];
-
-        match (v1, v2, labels_a, labels_b) {
-            (
-                Operand::Vector(v1),
-                Operand::Vector(v2),
-                Operand::Labels(labels_a),
-                Operand::Labels(labels_b),
-            ) => {
-                if v1.data.len() != labels_a.data.len() {
-                    Err(ErrorCode::InvalidOperand)?;
-                }
-                if v2.data.len() != labels_b.data.len() {
-                    Err(ErrorCode::InvalidOperand)?;
-                }
-                let mut j = 0;
-                for i in 0..labels_a.data.len() {
-                    let label_a = labels_a.data[i];
-                    while j < labels_b.data.len() {
-                        let label_b = labels_b.data[j];
-                        if label_b < label_a {
-                            // Label B not in A. This is an error, as we are not
-                            // extending A, and value would be negative. A must
-                            // have at least all same labels as B or more
-                            // labels.
-                            Err(ErrorCode::MathUnderflow)?
-                        } else if label_a < label_b {
-                            // Label A not in B.  Preserve value in A, as A - None = A
-                            break;
-                        } else {
-                            // Found matching label in B. Subtract values in-place: A <- A - MIN(A, B)
-                            let x1 = &mut v1.data[i];
-                            let x2 = v2.data[j];
-                            
-                            *x1 = x1.saturating_sub(x2)
-                                .ok_or_else(|| ErrorCode::MathOverflow)?;
-                            j += 1;
-                            break;
-                        }
-                    }
-                    // NOTE: if we didn't match any label in B, then preserve value in A, as A - None = A
-                }
-            }
-            _ => Err(ErrorCode::InvalidOperand)?,
-        }
-
-        Ok(())
-    }
-
-    fn jxpnd(&mut self, pos_labels_a: usize, pos_labels_b: usize) -> Result<(), ErrorCode> {
+    fn jflt(&mut self, pos_labels_a: usize, pos_labels_b: usize) -> Result<(), ErrorCode> {
         if pos_labels_a == pos_labels_b {
             // If both vectors use same labels, then no work needed
-            return Ok(())
+            return Ok(());
         }
         if pos_labels_a < 2 || pos_labels_b < 2 {
             // [TOS - 1, TOS] are reserved for values
@@ -775,76 +774,7 @@ impl Stack {
         let labels_b = &rest[stack_index_labels_b];
 
         match (v1, labels_a, labels_b) {
-            (
-                Operand::Vector(v1),
-                Operand::Labels(labels_a),
-                Operand::Labels(labels_b),
-            ) => {
-                if v1.data.len() != labels_a.data.len() {
-                    Err(ErrorCode::InvalidOperand)?;
-                }
-                let mut j = 0;
-                let mut k = 0;
-                for i in 0..labels_a.data.len() {
-                    let label_a = labels_a.data[i];
-                    let mut updated = false;
-                    while j < labels_b.data.len() {
-                        updated = true;
-                        let label_b = labels_b.data[j];
-                        if label_b < label_a {
-                            // Label B not in A.
-                            v1.data.insert(k, Amount::ZERO);
-                            k += 1;
-                            // we continue with same B, and next A
-                            continue;
-                        } else if label_a < label_b {
-                            // Label A not in B. A must be a subset of B.
-                            Err(ErrorCode::NotFound)?;
-                        } else {
-                            // Found matching label in B.
-                            j += 1;
-                            k += 1;
-                            // go to next A and next B
-                            break;
-                        }
-                    }
-                    if !updated {
-                        // Label A not in B. A must be a subset of B.
-                        Err(ErrorCode::NotFound)?;
-                    }
-                }
-            }
-            _ => Err(ErrorCode::InvalidOperand)?,
-        }
-
-        Ok(())
-    }
-    
-    fn jfltr(&mut self, pos_labels_a: usize, pos_labels_b: usize) -> Result<(), ErrorCode> {
-        if pos_labels_a == pos_labels_b {
-            // If both vectors use same labels, then no work needed
-            return Ok(())
-        }
-        if pos_labels_a < 2 || pos_labels_b < 2 {
-            // [TOS - 1, TOS] are reserved for values
-            Err(ErrorCode::InvalidOperand)?;
-        }
-        let stack_index_labels_a = self.get_stack_index(pos_labels_a)?;
-        let stack_index_labels_b = self.get_stack_index(pos_labels_b)?;
-        let (v1, rest) = self
-            .stack
-            .split_last_mut()
-            .ok_or_else(|| ErrorCode::StackUnderflow)?;
-
-        let labels_a = &rest[stack_index_labels_a];
-        let labels_b = &rest[stack_index_labels_b];
-
-        match (v1, labels_a, labels_b) {
-            (
-                Operand::Vector(v1),
-                Operand::Labels(labels_a),
-                Operand::Labels(labels_b),
-            ) => {
+            (Operand::Vector(v1), Operand::Labels(labels_a), Operand::Labels(labels_b)) => {
                 if v1.data.len() != labels_a.data.len() {
                     Err(ErrorCode::InvalidOperand)?;
                 }
@@ -870,6 +800,8 @@ impl Stack {
                         }
                     }
                 }
+                // Drop any further A as their labels didn't match any labels in B
+                drop(v1.data.drain(k..))
             }
             _ => Err(ErrorCode::InvalidOperand)?,
         }
@@ -879,13 +811,13 @@ impl Stack {
 }
 
 #[cfg(test)]
-pub (crate) fn log_stack_fun(stack: &Stack) {
+pub(crate) fn log_stack_fun(stack: &Stack) {
     log_msg!("\n[REGISTRY]");
-    for i in 0..stack.registry.len() {
+    for _i in 0..stack.registry.len() {
         log_msg!(
             "[{}] {}",
-            i,
-            match &stack.registry[i] {
+            _i,
+            match &stack.registry[_i] {
                 Operand::None => format!("None"),
                 Operand::Labels(labels) => format!("Labels: {}", *labels),
                 Operand::Vector(vector) => format!("Vector: {:0.5}", *vector),
@@ -896,11 +828,11 @@ pub (crate) fn log_stack_fun(stack: &Stack) {
     }
 
     log_msg!("\n[STACK]");
-    for i in 0..stack.stack.len() {
+    for _i in 0..stack.stack.len() {
         log_msg!(
             "[{}] {}",
-            i,
-            match &stack.stack[i] {
+            _i,
+            match &stack.stack[_i] {
                 Operand::None => format!("None"),
                 Operand::Labels(labels) => format!("Labels: {}", *labels),
                 Operand::Vector(vector) => format!("Vector: {:0.5}", *vector),
@@ -941,7 +873,11 @@ where
         self.execute_with_stack(code, &mut stack)
     }
 
-    pub(crate) fn execute_with_stack(&mut self, code: Vec<u128>, stack: &mut Stack) -> Result<(), ErrorCode> {
+    pub(crate) fn execute_with_stack(
+        &mut self,
+        code: Vec<u128>,
+        stack: &mut Stack,
+    ) -> Result<(), ErrorCode> {
         log_msg!("\nvvv EXECUTE PROGRAM vvv");
         log_stack!(&stack);
 
@@ -963,12 +899,6 @@ where
                     let v = self.vio.load_vector(id)?;
                     stack.push(Operand::Vector(v));
                 }
-                OP_LDS => {
-                    let id = code[pc];
-                    pc += 1;
-                    let v = self.vio.load_scalar(id)?;
-                    stack.push(Operand::Scalar(v));
-                }
                 OP_STL => {
                     let id = code[pc];
                     pc += 1;
@@ -987,18 +917,6 @@ where
                     match stack.pop()? {
                         Operand::Vector(v) => {
                             self.vio.store_vector(id, v)?;
-                        }
-                        _ => {
-                            Err(ErrorCode::InvalidOperand)?;
-                        }
-                    }
-                }
-                OP_STS => {
-                    let id = code[pc];
-                    pc += 1;
-                    match stack.pop()? {
-                        Operand::Scalar(v) => {
-                            self.vio.store_scalar(id, v)?;
                         }
                         _ => {
                             Err(ErrorCode::InvalidOperand)?;
@@ -1141,33 +1059,30 @@ where
                     pc += 1;
                     stack.swap(pos)?;
                 }
+                OP_JUPD => {
+                    let pos_1 = code[pc] as usize;
+                    pc += 1;
+                    let pos_2 = code[pc] as usize;
+                    pc += 1;
+                    let pos_3 = code[pc] as usize;
+                    pc += 1;
+                    stack.jupd(pos_1, pos_2, pos_3)?;
+                }
                 OP_JADD => {
                     let pos_1 = code[pc] as usize;
                     pc += 1;
                     let pos_2 = code[pc] as usize;
                     pc += 1;
-                    stack.jadd(pos_1, pos_2)?;
+                    let pos_3 = code[pc] as usize;
+                    pc += 1;
+                    stack.jadd(pos_1, pos_2, pos_3)?;
                 }
-                OP_JSSB => {
+                OP_JFLT => {
                     let pos_1 = code[pc] as usize;
                     pc += 1;
                     let pos_2 = code[pc] as usize;
                     pc += 1;
-                    stack.jssb(pos_1, pos_2)?;
-                }
-                OP_JXPND => {
-                    let pos_1 = code[pc] as usize;
-                    pc += 1;
-                    let pos_2 = code[pc] as usize;
-                    pc += 1;
-                    stack.jxpnd(pos_1, pos_2)?;
-                }
-                OP_JFLTR => {
-                    let pos_1 = code[pc] as usize;
-                    pc += 1;
-                    let pos_2 = code[pc] as usize;
-                    pc += 1;
-                    stack.jfltr(pos_1, pos_2)?;
+                    stack.jflt(pos_1, pos_2)?;
                 }
                 OP_B => {
                     // B <program_id> <num_inputs> <num_outputs> <num_registers>

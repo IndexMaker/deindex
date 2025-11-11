@@ -23,27 +23,27 @@ fn process_literal_expr(expr: Expr) -> proc_macro2::TokenStream {
 
                 let raw_value: LitInt = syn::parse_str(&value_str_no_dot).unwrap();
                 quote! {
-                    Amount::from_u128_with_scale(#raw_value as u128, #scale as u8)
+                    deli::amount::Amount::from_u128_with_scale(#raw_value as u128, #scale as u8)
                 }
             }
             syn::Lit::Int(lit_int) => {
                 match lit_int.base10_parse::<u128>() {
                     Ok(0) => {
-                        quote! { Amount::ZERO }
+                        quote! { deli::amount::Amount::ZERO }
                     }
                     Ok(1) => {
-                        quote! { Amount::ONE }
+                        quote! { deli::amount::Amount::ONE }
                     }
                     Ok(2) => {
-                        quote! { Amount::TWO }
+                        quote! { deli::amount::Amount::TWO }
                     }
                     Ok(4) => {
-                        quote! { Amount::FOUR }
+                        quote! { deli::amount::Amount::FOUR }
                     }
                     Ok(_) => {
                         // Case 3: Other integers (e.g., 100)
                         quote! {
-                            Amount::from_u128_with_scale(#lit_int as u128, 0)
+                            deli::amount::Amount::from_u128_with_scale(#lit_int as u128, 0)
                         }
                     }
                     Err(e) => panic!("Failed to parse integer literal: {}", e),

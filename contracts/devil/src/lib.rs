@@ -8,10 +8,10 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use alloy_primitives::{Address, U128};
-use deli::{amount::Amount, labels::Labels, vector::Vector};
+use deli::{labels::Labels, vector::Vector};
 use stylus_sdk::{
     prelude::*,
-    storage::{StorageAddress, StorageBytes, StorageMap, StorageU128},
+    storage::{StorageAddress, StorageBytes, StorageMap},
 };
 
 use crate::program::{ErrorCode, Program, VectorIO};
@@ -25,7 +25,6 @@ pub mod test;
 #[entrypoint]
 pub struct Devil {
     owner: StorageAddress,
-    scalars: StorageMap<U128, StorageU128>,
     vectors: StorageMap<U128, StorageBytes>,
 }
 
@@ -56,11 +55,6 @@ impl VectorIO for Devil {
         Ok(Vector::from_vec(vector.get_bytes()))
     }
 
-    fn load_scalar(&self, id: u128) -> Result<Amount, ErrorCode> {
-        let scalar = self.scalars.getter(U128::from(id));
-        Ok(Amount::from_u128(scalar.get()))
-    }
-
     fn store_labels(&mut self, id: u128, input: Labels) -> Result<(), ErrorCode> {
         let mut vector = self.vectors.setter(U128::from(id));
         vector.set_bytes(input.to_vec());
@@ -70,12 +64,6 @@ impl VectorIO for Devil {
     fn store_vector(&mut self, id: u128, input: Vector) -> Result<(), ErrorCode> {
         let mut vector = self.vectors.setter(U128::from(id));
         vector.set_bytes(input.to_vec());
-        Ok(())
-    }
-
-    fn store_scalar(&mut self, id: u128, input: Amount) -> Result<(), ErrorCode> {
-        let mut scalar = self.scalars.setter(U128::from(id));
-        scalar.set(input.to_u128());
         Ok(())
     }
 }
