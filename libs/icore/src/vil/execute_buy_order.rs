@@ -55,8 +55,7 @@ pub fn execute_buy_order(
         STR         _AssetQuantities            // Stack: [CIQ]
         POPN        1                           // Stack: []
 
-        // TODO: 
-        // - match Inventory Demand
+        // Match Inventory: Update Demand and Delta
         LDL         asset_names_id              // Stack [AssetNames]
         LDL         inventory_asset_names_id    // Stack [AssetNames, InventoryAssetNames]
         
