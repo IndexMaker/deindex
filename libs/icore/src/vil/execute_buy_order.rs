@@ -31,7 +31,7 @@ pub fn execute_buy_order(
         STR         _Collateral                 // Stack: []
 
         // Compute Index Quantity
-        LDV         index_quote_id                    // Stack: [Quote = (Capacity, Price, Slope)]
+        LDV         index_quote_id              // Stack: [Quote = (Capacity, Price, Slope)]
         UNPK                                    // Stack: [Capacity, Price, Slope]
         SWAP        2                           // Stack: [Slope, Price, Capacity]
         STR         _Capacity                   // Stack: [Slope, Price]
