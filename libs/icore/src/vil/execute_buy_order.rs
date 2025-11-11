@@ -44,9 +44,8 @@ pub fn execute_buy_order(
         LDM         _Capacity               // Stack: [Capacity]
         LDR         _IndexQuantity          // Stack: [Capacity, IndexQuantity]
         MIN         1                       // Stack: [Capacity, CappedIndexQuantity]
-        SWAP        1                       // Stack: [CappedIndexQuantity, Capacity]
-        POPN        1                       // Stack: [CappedIndexQuantity]
-        STR         _CappedIndexQuantity    // Stack: []
+        STR         _CappedIndexQuantity    // Stack: [Capacity]
+        POPN        1                       // Stack: []
 
         // Generate Individual Asset Orders (compute asset quantities)
         LDR         _CappedIndexQuantity    // Stack: [CappedIndexQuantity]
