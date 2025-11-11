@@ -7,6 +7,7 @@ pub const OP_LDS: u128 = 12; //   LDS <scalar_id>               ; no stack args 
 
 pub const OP_LDD: u128 = 13; //   LDD <pos>                     ; stack args = [TOS - pos] ; result = [TOS]; Load Duplicate (copy) of stack operand at [T-pos]. Pushes on TOS.
 pub const OP_LDR: u128 = 14; //   LDR <reg>                     ; no stack args ; result = [TOS - pos] ; Load value from Registry (R0-Rn). Pushes on TOS.
+pub const OP_LDM: u128 = 15; //   LDM <reg>                     ; no stack args ; result = [TOS - pos] ; Load value moving it out of Registry (R0-Rn). Value is removed from registry. Pushes on TOS.
 
 // 2. Data Storage & Register Access (20-23)
 pub const OP_STL: u128 = 20; //   STL <label_id>                ; stack args = [TOS: Labels] ; Store Labels object into VIO. Consumes TOS.
@@ -27,7 +28,7 @@ pub const OP_LUNION: u128 = 40; // LUNION <pos>                 ; stack args = [
 pub const OP_LPUSH: u128 = 41; //  LPUSH <immediate (label)>    ; stack args = [TOS: Labels[0..len]] ; result = [TOS:Labels[0..len + 1]] ; Push a label value onto the Labels object (TOS). In-place updates Labels on TOS, appending new component at the end.
 pub const OP_LPOP: u128 = 42; //   LPOP                         ; stack args = [TOS: Labels[0..len]] ; result = [TOS: Lables[0..len - 1]] ; Pop a label value from the Labels object (TOS). In-place updates Labels on TOS, removing last component.
 pub const OP_JADD: u128 = 43; //   JADD <pos_A> <pos_B>          ; stack args = [TOS - pos_A: 'LA, TOS - pos_B: Labels 'LB, TOS: Vector: 'A] ; result = [TOS: 'A expaned w/ 0 mapped 'LB to 'LA]; Add using Labels. Expands vector at [TOS-1] using labels at [T-pos_B] to match labels of TOS at [T-pos_A]. In-place updates TOS. Does not consume other operands.
-pub const OP_JSBB: u128 = 44; //   JSBB <pos_A> <pos_B>          ; stack args = [TOS - pos_A: 'LA, TOS - pos_B: Labels 'LB, TOS: Vector: 'A] ; result = [TOS: 'A expaned w/ 0 mapped 'LB to 'LA]; Saturating sub using Labels. Expands vector at [TOS-1] using labels at [T-pos_B] to match labels of TOS at [T-pos_A]. In-place updates TOS. Does not consume other operands.
+pub const OP_JSSB: u128 = 44; //   JSSB <pos_A> <pos_B>          ; stack args = [TOS - pos_A: 'LA, TOS - pos_B: Labels 'LB, TOS: Vector: 'A] ; result = [TOS: 'A expaned w/ 0 mapped 'LB to 'LA]; Saturating sub using Labels. Expands vector at [TOS-1] using labels at [T-pos_B] to match labels of TOS at [T-pos_A]. In-place updates TOS. Does not consume other operands.
 pub const OP_JXPND: u128 = 45; //  JXPND <pos_A> <pos_B>          ; stack args = [TOS - pos_A: 'LA, TOS - pos_B: Labels 'LB, TOS: Vector: 'A] ; result = [TOS: 'A expaned w/ 0 mapped 'LB to 'LA]; Expand using Labels. Expands vector at [TOS-1] using labels at [T-pos_B] to match labels of TOS at [T-pos_A]. In-place updates TOS. Does not consume other operands.
 pub const OP_JFLTR: u128 = 46; //  JFLTR <pos_A> <pos_B>          ; stack args = [TOS - pos_A: 'LA, TOS - pos_B: Labels 'LB, TOS: Vector: 'A] ; result = [TOS: 'A filtered mapped 'LB to 'LA]; Filter using Labels. Expands vector at [TOS-1] using labels at [T-pos_B] to match labels of TOS at [T-pos_A]. In-place updates TOS. Does not consume other operands.
 

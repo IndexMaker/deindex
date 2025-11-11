@@ -4,7 +4,6 @@ use core::mem::swap;
 use core::fmt::Debug;
 
 use alloc::vec::Vec;
-use alloy_primitives::U128;
 use deli::{amount::Amount, labels::Labels, log_msg, vector::Vector, vis::*};
 
 pub enum ErrorCode {
@@ -37,13 +36,13 @@ impl Debug for ErrorCode {
 }
 
 pub trait VectorIO {
-    fn load_labels(&self, id: U128) -> Result<Labels, ErrorCode>;
-    fn load_vector(&self, id: U128) -> Result<Vector, ErrorCode>;
-    fn load_scalar(&self, id: U128) -> Result<Amount, ErrorCode>;
+    fn load_labels(&self, id: u128) -> Result<Labels, ErrorCode>;
+    fn load_vector(&self, id: u128) -> Result<Vector, ErrorCode>;
+    fn load_scalar(&self, id: u128) -> Result<Amount, ErrorCode>;
 
-    fn store_labels(&mut self, id: U128, input: Labels) -> Result<(), ErrorCode>;
-    fn store_vector(&mut self, id: U128, input: Vector) -> Result<(), ErrorCode>;
-    fn store_scalar(&mut self, id: U128, input: Amount) -> Result<(), ErrorCode>;
+    fn store_labels(&mut self, id: u128, input: Labels) -> Result<(), ErrorCode>;
+    fn store_vector(&mut self, id: u128, input: Vector) -> Result<(), ErrorCode>;
+    fn store_scalar(&mut self, id: u128, input: Amount) -> Result<(), ErrorCode>;
 }
 
 pub struct Program<'vio, VIO>
@@ -77,7 +76,7 @@ impl Clone for Operand {
     }
 }
 
-struct Stack {
+pub (crate) struct Stack {
     stack: Vec<Operand>,
     registry: Vec<Operand>,
 }
@@ -145,7 +144,7 @@ macro_rules! impl_devil_binary_op {
 }
 
 impl Stack {
-    fn new(num_registers: usize) -> Self {
+    pub(crate) fn new(num_registers: usize) -> Self {
         let mut registry = Vec::new();
         registry.resize_with(num_registers, || Operand::None);
         Self {
@@ -198,6 +197,17 @@ impl Stack {
             .get(pos)
             .ok_or_else(|| ErrorCode::OutOfRange)?;
         self.push(v.clone());
+        Ok(())
+    }
+
+    fn ldm(&mut self, pos: usize) -> Result<(), ErrorCode> {
+        let v1 = self
+            .registry
+            .get_mut(pos)
+            .ok_or_else(|| ErrorCode::OutOfRange)?;
+        let mut v2 = Operand::None;
+        swap(v1, &mut v2);
+        self.push(v2);
         Ok(())
     }
 
@@ -869,7 +879,7 @@ impl Stack {
 }
 
 #[cfg(test)]
-fn log_stack_fun(stack: &Stack) {
+pub (crate) fn log_stack_fun(stack: &Stack) {
     log_msg!("\n[REGISTRY]");
     for i in 0..stack.registry.len() {
         log_msg!(
@@ -931,7 +941,7 @@ where
         self.execute_with_stack(code, &mut stack)
     }
 
-    fn execute_with_stack(&mut self, code: Vec<u128>, stack: &mut Stack) -> Result<(), ErrorCode> {
+    pub(crate) fn execute_with_stack(&mut self, code: Vec<u128>, stack: &mut Stack) -> Result<(), ErrorCode> {
         log_msg!("\nvvv EXECUTE PROGRAM vvv");
         log_stack!(&stack);
 
@@ -944,19 +954,19 @@ where
                 OP_LDL => {
                     let id = code[pc];
                     pc += 1;
-                    let v = self.vio.load_labels(U128::from(id))?;
+                    let v = self.vio.load_labels(id)?;
                     stack.push(Operand::Labels(v));
                 }
                 OP_LDV => {
                     let id = code[pc];
                     pc += 1;
-                    let v = self.vio.load_vector(U128::from(id))?;
+                    let v = self.vio.load_vector(id)?;
                     stack.push(Operand::Vector(v));
                 }
                 OP_LDS => {
                     let id = code[pc];
                     pc += 1;
-                    let v = self.vio.load_scalar(U128::from(id))?;
+                    let v = self.vio.load_scalar(id)?;
                     stack.push(Operand::Scalar(v));
                 }
                 OP_STL => {
@@ -964,7 +974,7 @@ where
                     pc += 1;
                     match stack.pop()? {
                         Operand::Labels(v) => {
-                            self.vio.store_labels(U128::from(id), v)?;
+                            self.vio.store_labels(id, v)?;
                         }
                         _ => {
                             Err(ErrorCode::InvalidOperand)?;
@@ -976,7 +986,7 @@ where
                     pc += 1;
                     match stack.pop()? {
                         Operand::Vector(v) => {
-                            self.vio.store_vector(U128::from(id), v)?;
+                            self.vio.store_vector(id, v)?;
                         }
                         _ => {
                             Err(ErrorCode::InvalidOperand)?;
@@ -988,7 +998,7 @@ where
                     pc += 1;
                     match stack.pop()? {
                         Operand::Scalar(v) => {
-                            self.vio.store_scalar(U128::from(id), v)?;
+                            self.vio.store_scalar(id, v)?;
                         }
                         _ => {
                             Err(ErrorCode::InvalidOperand)?;
@@ -1004,6 +1014,11 @@ where
                     let reg = code[pc] as usize;
                     pc += 1;
                     stack.ldr(reg)?;
+                }
+                OP_LDM => {
+                    let reg = code[pc] as usize;
+                    pc += 1;
+                    stack.ldm(reg)?;
                 }
                 OP_STR => {
                     let reg = code[pc] as usize;
@@ -1133,7 +1148,7 @@ where
                     pc += 1;
                     stack.jadd(pos_1, pos_2)?;
                 }
-                OP_JSBB => {
+                OP_JSSB => {
                     let pos_1 = code[pc] as usize;
                     pc += 1;
                     let pos_2 = code[pc] as usize;
@@ -1156,7 +1171,7 @@ where
                 }
                 OP_B => {
                     // B <program_id> <num_inputs> <num_outputs> <num_registers>
-                    let code_address = U128::from(code[pc]);
+                    let code_address = code[pc];
                     pc += 1;
                     let num_inputs = code[pc] as usize;
                     pc += 1;
@@ -1189,7 +1204,7 @@ where
                 }
                 OP_FOLD => {
                     // FOLD <program_id> <num_inputs> <num_outputs> <num_registers>
-                    let code_address = U128::from(code[pc]);
+                    let code_address = code[pc];
                     pc += 1;
                     let num_inputs = code[pc] as usize;
                     pc += 1;
@@ -1238,362 +1253,5 @@ where
         log_stack!(&stack);
         log_msg!("\n^^^ PROGRAM ENDED ^^^");
         Ok(())
-    }
-}
-
-#[cfg(test)]
-pub mod test {
-    use std::collections::HashMap;
-
-    use alloy_primitives::U128;
-    use deli::{amount::Amount, labels::Labels, log_msg, vector::Vector};
-
-    use super::ErrorCode;
-    use super::*; // Use glob import for tidiness
-
-    struct TestVectorIO {
-        labels: HashMap<U128, Labels>,
-        vectors: HashMap<U128, Vector>,
-        scalars: HashMap<U128, Amount>,
-    }
-
-    impl TestVectorIO {
-        fn new() -> Self {
-            Self {
-                labels: HashMap::new(),
-                vectors: HashMap::new(),
-                scalars: HashMap::new(),
-            }
-        }
-    }
-
-    impl VectorIO for TestVectorIO {
-        fn load_labels(&self, id: U128) -> Result<Labels, ErrorCode> {
-            let v = self.labels.get(&id).ok_or_else(|| ErrorCode::NotFound)?;
-            Ok(Labels {
-                data: v.data.clone(),
-            })
-        }
-
-        fn load_vector(&self, id: U128) -> Result<Vector, ErrorCode> {
-            let v = self.vectors.get(&id).ok_or_else(|| ErrorCode::NotFound)?;
-            Ok(Vector {
-                data: v.data.clone(),
-            })
-        }
-
-        fn load_scalar(&self, id: U128) -> Result<Amount, ErrorCode> {
-            let v = self.scalars.get(&id).ok_or_else(|| ErrorCode::NotFound)?;
-            Ok(*v)
-        }
-
-        fn store_labels(&mut self, id: U128, input: Labels) -> Result<(), ErrorCode> {
-            self.labels.insert(id, input);
-            Ok(())
-        }
-
-        fn store_vector(&mut self, id: U128, input: Vector) -> Result<(), ErrorCode> {
-            self.vectors.insert(id, input);
-            Ok(())
-        }
-
-        fn store_scalar(&mut self, id: U128, input: Amount) -> Result<(), ErrorCode> {
-            self.scalars.insert(id, input);
-            Ok(())
-        }
-    }
-
-    /// All round test verifies that majority of VIL functionality works as expected.
-    /// 
-    /// We test:
-    /// - load and store of vectors (externally via VectorIO)
-    /// - load and store of values into registry
-    /// - invocation of sub-routines w/ parameters and return values
-    /// - example implementation of Solve-Quadratic function (vectorised)
-    /// - example implementation of index order asset quantity computation from index asset weights
-    /// 
-    /// The purpose of VIL is to allow generic vector operations in Stylus smart-contracts, so that:
-    /// - vector data is loaded and stored into blockchain once and only once
-    /// - vector data is modified in-place whenever possible, and only duplicated when necessary
-    /// - labels and join operations allow sparse vector addition and saturating subtraction
-    /// - data and operations live in the same smart-contract without exceeding 24KiB WASM limit
-    /// - other smart-contracts can submit VIL code to execute without them-selves exceeding 24KiB WASM limit
-    /// - minimisation of gas use by reduction of blockchain operations and executed instructions
-    /// 
-    /// NOTE: while VIL is an assembly language, it is limitted exclusively to perform vector math, and
-    /// instruction set is designed to particularly match our requirements to execute index orders and 
-    /// update inventory.
-    /// 
-    /// TBD: examine real-life gas usage and limits.
-    /// 
-    #[test]
-    fn test_compute_1() {
-        let mut vio = TestVectorIO::new();
-        let assets_id = U128::from(101);
-        let weights_id = U128::from(102);
-        let quote_id = U128::from(201);
-        let order_id = U128::from(301);
-        let order_quantities_id = U128::from(401);
-        let solve_quadratic_id = U128::from(901);
-
-        vio.store_labels(
-            assets_id,
-            Labels {
-                data: vec![1001, 1002, 1003],
-            },
-        )
-        .unwrap();
-
-        vio.store_vector(
-            weights_id,
-            Vector {
-                data: vec![
-                    Amount::from_u128_with_scale(0_100, 3),
-                    Amount::from_u128_with_scale(1_000, 3),
-                    Amount::from_u128_with_scale(100_0, 1),
-                ],
-            },
-        )
-        .unwrap();
-
-        vio.store_vector(
-            quote_id,
-            Vector {
-                data: vec![
-                    Amount::from_u128_with_scale(10_00, 2),
-                    Amount::from_u128_with_scale(10_000, 0),
-                    Amount::from_u128_with_scale(100_0, 1),
-                ],
-            },
-        )
-        .unwrap();
-
-        vio.store_vector(
-            order_id,
-            Vector {
-                data: vec![
-                    Amount::from_u128_with_scale(1000_00, 2),
-                    Amount::from_u128_with_scale(0, 0),
-                    Amount::from_u128_with_scale(0, 0),
-                ],
-            },
-        )
-        .unwrap();
-
-        #[rustfmt::skip]
-        let solve_quadratic_vectorized = vec![
-            // 1. Initial Load and Setup (assuming stack starts with [C_vec, P_vec, S_vec])
-            OP_STR, 1, // S_vec -> R1, POP S_vec
-            OP_STR, 2, // P_vec -> R2, POP P_vec
-            OP_STR, 3, // C_vec -> R3, POP C_vec
-
-            // 2. Compute P^2 (R4)
-            OP_LDR, 2, 
-            OP_MUL, 0, // P^2 = P * P (Vector self-multiplication)
-            OP_STR, 4, // P^2 -> R4, POP P^2
-
-            // 3. Compute Radical (R5)
-            OP_LDR, 1, OP_LDR, 3, OP_MUL, 1, // [S, SC] (Vector * Vector)
-            OP_IMMS, Amount::FOUR.to_u128_raw(), OP_MUL, 1, // [S, SC, 4SC] (Vector * Scalar)
-            OP_LDR, 4, // [S, SC, 4SC, P^2]
-            OP_ADD, 1, // [S, SC, 4SC, P^2+4SC] (Vector + Vector)
-            OP_SQRT, // [S, SC, 4SC, R] (Vector square root)
-            OP_STR, 5, // R -> R5, POP R
-
-            // 4. Compute Numerator: R - min(R, P)
-            OP_LDR, 5, OP_LDR, 2, // [..., R, P]
-            OP_MIN, 1, // [..., R, min(R, P)] (Vector pairwise MIN)
-            OP_SWAP, 1, // [..., min(R, P), R] 
-            OP_SUB, 1, // [..., min(R, P), N] (Vector - Vector subtraction)
-            
-            // 5. Compute X = Num / 2S
-            OP_LDR, 1, OP_IMMS, Amount::TWO.to_u128_raw(), // [..., min, N, S, 2]
-            OP_SWAP, 1, // [..., min, N, 2, S]
-            OP_MUL, 1, // [..., min, N, 2, 2S] (Vector * Scalar multiplication)
-            
-            OP_SWAP, 2, // [..., min, 2S, 2, N] (N at pos 0, 2S at pos 2)
-            OP_DIV, 2, // [..., min, 2S, 2, X]. X = N / 2S. (Vector / Vector division)
-            // Final Vector X is at the top of the stack.
-        ];
-
-        vio.store_labels(
-            solve_quadratic_id,
-            Labels {
-                data: solve_quadratic_vectorized,
-            },
-        )
-        .unwrap();
-
-        let reg_weights = 0;
-        let reg_collateral = 1;
-        let reg_capacity = 2;
-        let reg_price = 3;
-        let reg_slope = 4;
-
-        #[rustfmt::skip]
-        let code = vec![
-            OP_LDV, weights_id.to::<u128>(), // Stack: [AW]
-            OP_STR, reg_weights,             // Stack: []
-            
-            // Extract Collateral (Order vector: [Collateral, Spent, Minted])
-            OP_LDV, order_id.to::<u128>(),   // Stack: [O]
-            OP_UNPK,                         // Stack: [Minted, Spent, Collateral]
-            OP_POPN, 2,                       // Stack: [Collateral]
-            OP_STR, reg_collateral,          // Stack: []
-
-            // Extract Price and Slope (Quote vector: [Capacity, Price, Slope])
-            OP_LDV, quote_id.to::<u128>(),   // Stack: [Q]
-            OP_UNPK,                         // Stack: [Slope, Price, Capacity]
-            OP_POPN, 1,                       // Stack: [Slope, Price] (Capacity discarded)
-
-            // Stack is now [Slope, Price]. Load Collateral to get arguments in order.
-            OP_LDR, reg_collateral,          // Stack: [Slope, Price, Collateral]
-            
-            // Call procedure: Inputs are Collateral (TOS), Price, Slope.
-            OP_B, solve_quadratic_id.to::<u128>(), 3, 1, 8, // Stack: [IndexQuantity]
-
-            // Apply Weights and Store Result
-            OP_LDR, reg_weights,             // Stack: [IQ, AW]
-            OP_MUL, 1,                       // Stack: [AssetQuantities]
-            OP_STV, order_quantities_id.to::<u128>(), // Stack: []
-        ];
-
-        let num_registers = 8;
-
-        let mut program = Program::new(&mut vio);
-        let mut stack = Stack::new(num_registers);
-        let result = program.execute_with_stack(code, &mut stack);
-
-        if let Err(err) = result {
-            log_stack!(&stack);
-            panic!("Failed to execute test: {:?}", err);
-        }
-
-        let order = vio.load_vector(order_id).unwrap();
-        let quote = vio.load_vector(quote_id).unwrap();
-        let weigths = vio.load_vector(weights_id).unwrap();
-        let order_quantites = vio.load_vector(order_quantities_id).unwrap();
-
-        log_msg!("\n-= Program complete =-");
-        log_msg!("[in] Order = {:0.9}", order);
-        log_msg!("[in] Quote = {:0.9}", quote);
-        log_msg!("[in] Weights = {:0.9}", weigths);
-        log_msg!("[out] Order Quantities = {:0.9}", order_quantites);
-
-        // [in] Order = 1000.000000000,0.000000000,0.000000000
-        // [in] Quote = 10.000000000,10000.000000000,100.000000000
-        // [in] Weights = 0.100000000,1.000000000,100.000000000
-        // [out] Order Quantities = 0.000099990,0.000999900,0.099990001
-
-        assert_eq!(order.data, vec![
-            Amount::from_u128_with_scale(1000, 0),
-            Amount::from_u128_with_scale(0, 0),
-            Amount::from_u128_with_scale(0, 0),
-        ]);
-        
-        assert_eq!(quote.data, vec![
-            Amount::from_u128_with_scale(10, 0),
-            Amount::from_u128_with_scale(10_000, 0),
-            Amount::from_u128_with_scale(100, 0),
-        ]);
-        
-        assert_eq!(weigths.data, vec![
-            Amount::from_u128_with_scale(1, 1),
-            Amount::from_u128_with_scale(1, 0),
-            Amount::from_u128_with_scale(100, 0),
-        ]);
-        
-        // these are exact expected fixed point decimal values as raw u128
-        assert_eq!(order_quantites.data, vec![
-            Amount(99990001950000), Amount(999900019500000), Amount(99990001950000000)
-        ]);
-    }
-
-    #[test]
-    fn test_transpose() {
-        let mut vio = TestVectorIO::new();
-        let num_registers = 8;
-
-        // Utility to create a readable Amount (e.g., 5 is "5.0")
-        let a = |x: u128| Amount::from_u128_with_scale(x, 0);
-
-        // --- 1. Setup VIO Inputs ---
-        let vector1_id = U128::from(100);
-        let vector2_id = U128::from(101);
-        let expected1_id = U128::from(102); // T1: [1, 4]
-        let expected2_id = U128::from(103); // T2: [2, 5]
-        let expected3_id = U128::from(104); // T3: [3, 6]
-        let delta_id = U128::from(105);
-
-        // V1: [1.0, 2.0, 3.0]
-        let v1 = Vector {
-            data: vec![a(1), a(2), a(3)],
-        };
-        // V2: [4.0, 5.0, 6.0]
-        let v2 = Vector {
-            data: vec![a(4), a(5), a(6)],
-        };
-
-        // Expected Transposed Columns (T1, T2, T3)
-        let t1_expected = Vector {
-            data: vec![a(1), a(4)],
-        };
-        let t2_expected = Vector {
-            data: vec![a(2), a(5)],
-        };
-        let t3_expected = Vector {
-            data: vec![a(3), a(6)],
-        };
-
-        vio.store_vector(vector1_id, v1).unwrap();
-        vio.store_vector(vector2_id, v2).unwrap();
-        vio.store_vector(expected1_id, t1_expected).unwrap();
-        vio.store_vector(expected2_id, t2_expected).unwrap();
-        vio.store_vector(expected3_id, t3_expected).unwrap();
-
-        // --- 2. VIL Code Execution ---
-        #[rustfmt::skip]
-        let code = vec![
-            // 1. Setup Transposition
-            OP_LDV, vector1_id.to::<u128>(), // Stack: [V1]
-            OP_LDV, vector2_id.to::<u128>(), // Stack: [V1, V2]
-            OP_T, 2,                         // Stack: [T1, T2, T3] (3 vectors)
-
-            // 2. Load Expected Vectors for comparison
-            OP_LDV, expected1_id.to::<u128>(), // [T1, T2, T3, E1]
-            OP_LDV, expected2_id.to::<u128>(), // [T1, T2, T3, E1, E2]
-            OP_LDV, expected3_id.to::<u128>(), // [T1, T2, T3, E1, E2, E3] (6 vectors)
-
-            // 3. D3 = T3 - E3
-            OP_SUB, 3,                         // Stack: [T1, T2, T3, E1, E2, D3]
-            
-            // 4. D2 = T2 - E2
-            OP_SWAP, 1,                        // Stack: [T1, T2, T3, E1, D3, E2]
-            OP_SUB, 4,                         // Stack: [T1, T2, T3, E1, D3, D2]
-
-            // 5. D1 = T1 - E1
-            OP_SWAP, 2,                        // Stack: [T1, T2, T3, D2, D3, E1]
-            OP_SUB, 5,                         // Stack: [T1, T2, T3, D2, D3, D1]
-
-            // 6. Compute total delta - should be zero
-            OP_ADD, 1,                         // Stack: [T1, T2, T3, D2, D3, D1 + D3]
-            OP_ADD, 2,                         // Stack: [T1, T2, T3, D2, D3, D1 + D3 + D2]
-            
-            // 7. Store the final zero vector
-            OP_STV, delta_id.to::<u128>(),
-        ];
-
-        let mut stack = Stack::new(num_registers);
-        let mut program = Program::new(&mut vio);
-
-        if let Err(err) = program.execute_with_stack(code, &mut stack) {
-            log_stack!(&stack);
-            panic!("Failed to execute test: {:?}", err);
-        }
-
-        // --- 3. Assertion ---
-        let delta = vio.load_vector(delta_id).unwrap();
-
-        assert_eq!(delta.data, vec![Amount::ZERO; 2]);
     }
 }

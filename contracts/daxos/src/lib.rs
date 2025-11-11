@@ -9,6 +9,8 @@ use alloc::vec::Vec;
 
 use alloy_primitives::{Address, U128};
 use alloy_sol_types::{sol, SolCall};
+use deli::labels::Labels;
+use icore::vil::{execute_buy_order::execute_buy_order, update_supply::update_supply};
 use stylus_sdk::{
     prelude::*,
     storage::{StorageAddress, StorageMap},
@@ -16,7 +18,7 @@ use stylus_sdk::{
 
 sol! {
     /// Vector IL (VIL) virtual machine
-    /// 
+    ///
     /// Performs operations on vectors stored on-chain as opaque blobs.  By
     /// using dedicated VIL for vector processing we save on (de)serialisation
     /// of blobs and also on SLOAD/SSTORE operations, because we have all vector
@@ -36,18 +38,18 @@ sol! {
     }
 
     /// Gateway monitors supply and demand for assets
-    /// 
+    ///
     /// Vault orders update demand, while authorised provider updates supply.
     /// The delta monitors difference between suppy and demand, and is critical
     /// metric for:
     ///     a) authorised provider to know which assets to buy/sell
     ///     b) daxos to match new orders or halt (throttle order over time)
-    /// 
+    ///
     /// All data is stored as vectors on DeVIL virtual machine, and Gateway
     /// itself only organises handles to those vectors and submits VIL programs
     /// to execute. The results of those programs executions stay on DeVIL, but
     /// can be accessed when required by calling Devil::get(vector_id) method.
-    /// 
+    ///
     interface IGateway  {
         function setup(address owner, address devil) external;
 
@@ -67,13 +69,13 @@ sol! {
     }
 
     /// Vault (a.k.a. Index) tracks its price and orders
-    /// 
+    ///
     /// Vault stores:
     ///     - asset weights
     ///     - latest quote, which consists of: Capacity, Price, and Slope (Price
     ///     change with quantity)
     ///     - order queue
-    /// 
+    ///
     /// All data is stored as vectors on DeVIL virtual machine, and Vault itself
     /// only organises handles to those vectors and submits VIL programs to
     /// execute.
@@ -107,6 +109,16 @@ impl Daxos {
         if !current_owner.is_zero() && address != current_owner {
             Err(b"Mut be owner")?;
         }
+        Ok(())
+    }
+
+    fn send_to_devil(&mut self, code: Vec<u128>, num_registry: u128) -> Result<(), Vec<u8>> {
+        let devil_call = IDevil::executeCall {
+            code: Labels { data: code }.to_vec(),
+            num_registry,
+        };
+        self.vm()
+            .call(&self, self.devil.get(), &devil_call.abi_encode())?;
         Ok(())
     }
 }
@@ -162,6 +174,18 @@ impl Daxos {
             collateral_amount,
         };
         self.vm().call(&self, vault_address, &submit.abi_encode())?;
+        let [order_id, weights_id, quote_id, solve_quadratic_id, order_quantities_id] = [0; 5];
+
+        // TODO: get those from Vault and Gateway
+        let update = execute_buy_order(
+            order_id,
+            weights_id,
+            quote_id,
+            solve_quadratic_id,
+            order_quantities_id,
+        );
+        let num_registry = 16;
+        self.send_to_devil(update, num_registry)?;
         Ok(())
     }
 
@@ -170,6 +194,22 @@ impl Daxos {
         let submit = IGateway::submitSupplyCall {};
         self.vm()
             .call(&self, gateway_address, &submit.abi_encode())?;
+
+        let [inventory_asset_names_id, supply_long_id, supply_short_id, demand_long_id, demand_short_id, delta_long_id, delta_short_id] =
+            [0; 7];
+
+        // TODO: get those from Gateway
+        let update = update_supply(
+            inventory_asset_names_id,
+            supply_long_id,
+            supply_short_id,
+            demand_long_id,
+            demand_short_id,
+            delta_long_id,
+            delta_short_id,
+        );
+        let num_registry = 16;
+        self.send_to_devil(update, num_registry)?;
         Ok(())
     }
 }

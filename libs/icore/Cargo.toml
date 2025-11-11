@@ -6,3 +6,10 @@ description = "Index Core Library"
 
 [lib]
 crate-type = ["lib"]
+
+[dependencies]
+deli = { workspace = true, features = ["stylus"] }
+amount-macros = { workspace = true }
+devil-macros = { workspace = true }
+labels-macros = { workspace = true }
+vector-macros = { workspace = true }
