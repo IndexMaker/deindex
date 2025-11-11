@@ -30,7 +30,6 @@ lazy_static::lazy_static! {
         // 1. Data Loading & Stack Access (10-14)
         m.insert("LDL", vec![StorageId]);  
         m.insert("LDV", vec![StorageId]);  
-        m.insert("LDS", vec![StorageId]);  
         m.insert("LDD", vec![StackPos]);   
         m.insert("LDR", vec![RegisterId]); 
         m.insert("LDM", vec![RegisterId]); 
@@ -38,7 +37,6 @@ lazy_static::lazy_static! {
         // 2. Data Storage & Register Access (20-23)
         m.insert("STL", vec![StorageId]);  
         m.insert("STV", vec![StorageId]);  
-        m.insert("STS", vec![StorageId]);  
         m.insert("STR", vec![RegisterId]);
 
         // 3. Data Structure Manipulation (30-35)
@@ -55,8 +53,6 @@ lazy_static::lazy_static! {
         m.insert("LPOP", vec![]);
         m.insert("JUPD", vec![StackPos, StackPos, StackPos]);
         m.insert("JADD", vec![StackPos, StackPos, StackPos]); 
-        m.insert("JSSB", vec![StackPos, StackPos, StackPos]);
-        m.insert("JXPN", vec![StackPos, StackPos]);
         m.insert("JFLT", vec![StackPos, StackPos]);
         
         // 5. Arithmetic & Core Math (50-55)

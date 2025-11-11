@@ -13,7 +13,6 @@ use crate::program::*; // Use glob import for tidiness
 struct TestVectorIO {
     labels: HashMap<u128, Labels>,
     vectors: HashMap<u128, Vector>,
-    scalars: HashMap<u128, Amount>,
 }
 
 impl TestVectorIO {
@@ -21,7 +20,6 @@ impl TestVectorIO {
         Self {
             labels: HashMap::new(),
             vectors: HashMap::new(),
-            scalars: HashMap::new(),
         }
     }
 }
@@ -41,11 +39,6 @@ impl VectorIO for TestVectorIO {
         })
     }
 
-    fn load_scalar(&self, id: u128) -> Result<Amount, ErrorCode> {
-        let v = self.scalars.get(&id).ok_or_else(|| ErrorCode::NotFound)?;
-        Ok(*v)
-    }
-
     fn store_labels(&mut self, id: u128, input: Labels) -> Result<(), ErrorCode> {
         self.labels.insert(id, input);
         Ok(())
@@ -53,11 +46,6 @@ impl VectorIO for TestVectorIO {
 
     fn store_vector(&mut self, id: u128, input: Vector) -> Result<(), ErrorCode> {
         self.vectors.insert(id, input);
-        Ok(())
-    }
-
-    fn store_scalar(&mut self, id: u128, input: Amount) -> Result<(), ErrorCode> {
-        self.scalars.insert(id, input);
         Ok(())
     }
 }
