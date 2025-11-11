@@ -88,14 +88,22 @@ impl VectorIO for TestVectorIO {
 #[test]
 fn test_compute_1() {
     let mut vio = TestVectorIO::new();
-    let assets_id = 101;
-    let weights_id = 102;
-    let quote_id = 201;
-    let order_id = 301;
-    let order_quantities_id = 401;
-    let solve_quadratic_id = 901;
+    let index_order_id = 10001;
+    let executed_asset_quantities_id = 10002;
+    let executed_index_quantities_id = 10003;
+    let asset_names_id = 1001;
+    let weights_id = 1002;
+    let quote_id = 1003;
+    let inventory_asset_names_id = 101;
+    let supply_long_id = 102;
+    let supply_short_id = 103;
+    let demand_long_id = 104;
+    let demand_short_id = 105;
+    let delta_long_id = 106;
+    let delta_short_id = 107;
+    let solve_quadratic_id = 10;
 
-    vio.store_labels(assets_id, label_vec![1001, 1002, 1003])
+    vio.store_labels(asset_names_id, label_vec![51, 53, 54])
         .unwrap();
 
     vio.store_vector(weights_id, amount_vec![0.100, 1.000, 100.0])
@@ -104,7 +112,28 @@ fn test_compute_1() {
     vio.store_vector(quote_id, amount_vec![10.00, 10_000, 100.0])
         .unwrap();
 
-    vio.store_vector(order_id, amount_vec![1000.00, 0, 0])
+    vio.store_vector(index_order_id, amount_vec![1000.00, 0, 0])
+        .unwrap();
+
+    vio.store_labels(inventory_asset_names_id, label_vec![51, 52, 53, 54, 55])
+        .unwrap();
+
+    vio.store_vector(demand_short_id, amount_vec![0, 0, 0.01, 0, 0])
+        .unwrap();
+
+    vio.store_vector(demand_long_id, amount_vec![0.1, 0.1, 0, 0.01, 0.2])
+        .unwrap();
+
+    vio.store_vector(supply_short_id, amount_vec![0, 0, 0, 0, 0])
+        .unwrap();
+
+    vio.store_vector(supply_long_id, amount_vec![0.05, 0.05, 0.05, 0.05, 0.05])
+        .unwrap();
+
+    vio.store_vector(delta_short_id, amount_vec![0, 0, 0, 0, 0])
+        .unwrap();
+
+    vio.store_vector(delta_long_id, amount_vec![0, 0, 0, 0, 0])
         .unwrap();
 
     vio.store_labels(
@@ -116,17 +145,23 @@ fn test_compute_1() {
     .unwrap();
 
     let code = execute_buy_order(
-        order_id,
+        index_order_id,
+        executed_index_quantities_id,
+        executed_asset_quantities_id,
+        asset_names_id,
         weights_id,
         quote_id,
+        inventory_asset_names_id,
+        supply_long_id,
+        supply_short_id,
+        demand_long_id,
+        demand_short_id,
+        delta_long_id,
+        delta_short_id,
         solve_quadratic_id,
-        order_quantities_id,
     );
-    // P = 10 000
-    // S = 100
-    // C = 1000
 
-    let num_registers = 8;
+    let num_registers = 16;
 
     let mut program = Program::new(&mut vio);
     let mut stack = Stack::new(num_registers);
@@ -137,21 +172,26 @@ fn test_compute_1() {
         panic!("Failed to execute test: {:?}", err);
     }
 
-    let order = vio.load_vector(order_id).unwrap();
+    let order = vio.load_vector(index_order_id).unwrap();
     let quote = vio.load_vector(quote_id).unwrap();
     let weigths = vio.load_vector(weights_id).unwrap();
-    let order_quantites = vio.load_vector(order_quantities_id).unwrap();
+    let index_quantites = vio.load_vector(executed_index_quantities_id).unwrap();
+    let asset_quantites = vio.load_vector(executed_asset_quantities_id).unwrap();
+    let demand_short = vio.load_vector(demand_short_id).unwrap();
+    let demand_long = vio.load_vector(demand_long_id).unwrap();
+    let delta_short = vio.load_vector(delta_short_id).unwrap();
+    let delta_long = vio.load_vector(delta_long_id).unwrap();
 
     log_msg!("\n-= Program complete =-");
-    log_msg!("[in] Order = {:0.9}", order);
-    log_msg!("[in] Quote = {:0.9}", quote);
-    log_msg!("[in] Weights = {:0.9}", weigths);
-    log_msg!("[out] Order Quantities = {:0.9}", order_quantites);
-
-    // [in] Order = 1000.000000000,0.000000000,0.000000000
-    // [in] Quote = 10.000000000,10000.000000000,100.000000000
-    // [in] Weights = 0.100000000,1.000000000,100.000000000
-    // [out] Order Quantities = 0.000099990,0.000999900,0.099990001
+    log_msg!("\n[in] Index Order = {:0.9}", order);
+    log_msg!("[in] Index Quote = {:0.9}", quote);
+    log_msg!("[in] Asset Weights = {:0.9}", weigths);
+    log_msg!("\n[out] Index Quantities = {:0.9}", index_quantites);
+    log_msg!("[out] Asset Quantities = {:0.9}", asset_quantites);
+    log_msg!("\n[out] Demand Short = {:0.9}", demand_short);
+    log_msg!("[out] Demand Long = {:0.9}", demand_long);
+    log_msg!("\n[out] Delta Short = {:0.9}", delta_short);
+    log_msg!("[out] Delta Long = {:0.9}", delta_long);
 
     assert_eq!(order.data, amount_vec![1000, 0, 0].data);
     assert_eq!(quote.data, amount_vec![10, 10_000, 100].data);
@@ -159,9 +199,23 @@ fn test_compute_1() {
 
     // these are exact expected fixed point decimal values as raw u128
     assert_eq!(
-        order_quantites.data,
-        amount_vec![0.00999001995, 0.0999001995, 9.990019950].data
+        index_quantites.data,
+        amount_vec![0.0999001995, 0.000000000].data
     );
+    assert_eq!(
+        asset_quantites.data,
+        amount_vec![0.00999001995, 0.0999001995, 9.99001995].data
+    );
+    assert_eq!(demand_short.data, amount_vec![0, 0, 0, 0, 0].data);
+    assert_eq!(
+        demand_long.data,
+        amount_vec![0.10999001995, 0.1, 0.0899001995, 10.00001995, 0.2].data
+    );
+    assert_eq!(
+        delta_short.data,
+        amount_vec![0.05999001995, 0.05, 0.0399001995, 9.95001995, 0.15].data
+    );
+    assert_eq!(delta_long.data, amount_vec![0, 0, 0, 0, 0].data);
 }
 
 #[test]

@@ -53,10 +53,11 @@ lazy_static::lazy_static! {
         m.insert("LUNION", vec![StackPos]);
         m.insert("LPUSH", vec![Label]);    // <immediate (label)>
         m.insert("LPOP", vec![]);
-        m.insert("JADD", vec![StackPos, StackPos]); 
-        m.insert("JSSB", vec![StackPos, StackPos]);
-        m.insert("JXPND", vec![StackPos, StackPos]);
-        m.insert("JFLTR", vec![StackPos, StackPos]);
+        m.insert("JUPD", vec![StackPos, StackPos, StackPos]);
+        m.insert("JADD", vec![StackPos, StackPos, StackPos]); 
+        m.insert("JSSB", vec![StackPos, StackPos, StackPos]);
+        m.insert("JXPN", vec![StackPos, StackPos]);
+        m.insert("JFLT", vec![StackPos, StackPos]);
         
         // 5. Arithmetic & Core Math (50-55)
         m.insert("ADD", vec![StackPos]);   
