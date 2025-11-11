@@ -11,4 +11,3 @@ pub mod math;
 pub mod uint;
 pub mod vector;
 pub mod vis;
-pub mod vis_macros;

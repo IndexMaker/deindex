@@ -1359,6 +1359,7 @@ dependencies = [
  "ethers",
  "eyre",
  "hex",
+ "icore",
  "stylus-sdk",
  "tokio",
 ]
@@ -1437,6 +1438,7 @@ dependencies = [
  "ethers",
  "eyre",
  "hex",
+ "icore",
  "labels-macros",
  "stylus-sdk",
  "tokio",
@@ -2563,6 +2565,13 @@ dependencies = [
 [[package]]
 name = "icore"
 version = "0.1.0"
+dependencies = [
+ "amount-macros",
+ "deli",
+ "devil-macros",
+ "labels-macros",
+ "vector-macros",
+]
 
 [[package]]
 name = "icu_collections"

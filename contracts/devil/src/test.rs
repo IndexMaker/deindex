@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use amount_macros::amount;
 use deli::{amount::Amount, labels::Labels, log_msg, vector::Vector, vis::*};
 use devil_macros::devil;
+use icore::vil::execute_buy_order::execute_buy_order;
+use icore::vil::solve_quadratic::solve_quadratic;
 use labels_macros::label_vec;
 use vector_macros::amount_vec;
 
@@ -106,77 +107,24 @@ fn test_compute_1() {
     vio.store_vector(order_id, amount_vec![1000.00, 0, 0])
         .unwrap();
 
-    let solve_quadratic_vectorized = devil! {
-        // 1. Initial Load and Setup (assuming stack starts with [C_vec, P_vec, S_vec])
-        STR     _S           // S_vec -> R1, POP S_vec
-        STR     _P           // P_vec -> R2, POP P_vec
-        STR     _C           // C_vec -> R3, POP C_vec
-
-        // 2. Compute P^2 (R4)
-        LDR     _P
-        MUL     0           // P^2 = P * P (Vector self-multiplication)
-        STR     _P2         // P^2 -> R4, POP P^2
-
-        // 3. Compute Radical (R5)
-        LDR     _S
-        LDR     _C
-        MUL     1           // [S, SC] (Vector * Vector)
-        IMMS    4
-        MUL     1           // [S, SC, 4SC] (Vector * Scalar)
-        LDR     _P2         // [S, SC, 4SC, P^2]
-        ADD     1           // [S, SC, 4SC, P^2+4SC] (Vector + Vector)
-        SQRT                // [S, SC, 4SC, R] (Vector square root)
-
-        // 4. Compute Numerator: N = max(R - P, 0)
-        LDR     _P          // [..., R, P]
-        SWAP    1           // [..., P, R]
-        SSB     1           // [..., P, N] (Vector - Vector subtraction)
-
-        // 5. Compute X = Num / 2S
-        LDR     _S
-        IMMS    2           // [..., min, N, S, 2]
-        SWAP    1           // [..., min, N, 2, S]
-        MUL     1           // [..., min, N, 2, 2S] (Vector * Scalar multiplication)
-
-        SWAP    2           // [..., min, 2S, 2, N] (N at pos 0, 2S at pos 2)
-        DIV     2           // [..., min, 2S, 2, X]. X = N / 2S. (Vector / Vector division)
-        // Final Vector X is at the top of the stack.
-    };
-
     vio.store_labels(
         solve_quadratic_id,
         Labels {
-            data: solve_quadratic_vectorized,
+            data: solve_quadratic(),
         },
     )
     .unwrap();
 
-    let code = devil! {
-        LDV         weights_id          // Stack: [AW]
-        STR         _AW                 // Stack: []
-
-        // Extract Collateral (Order vector: [Collateral, Spent, Minted])
-        LDV         order_id            // Stack: [O]
-        UNPK                            // Stack: [Minted, Spent, Collateral]
-        POPN        2                   // Stack: [Collateral]
-        STR         _C                  // Stack: []
-
-        // Extract Price and Slope (Quote vector: [Capacity, Price, Slope])
-        LDV         quote_id            // Stack: [Q]
-        UNPK                            // Stack: [Slope, Price, Capacity]
-        POPN        1                   // Stack: [Slope, Price] (Capacity discarded)
-
-        // Stack is now [Slope, Price]. Load Collateral to get arguments in order.
-        LDR         _C                  // Stack: [Slope, Price, Collateral]
-
-        // Call procedure: Inputs are Collateral (TOS), Price, Slope.
-        B  solve_quadratic_id  3  1  4  // Stack: [IndexQuantity]
-
-        // Apply Weights and Store Result
-        LDR         _AW                 // Stack: [IQ, AW]
-        MUL         1                   // Stack: [AssetQuantities]
-        STV         order_quantities_id // Stack: []
-    };
+    let code = execute_buy_order(
+        order_id,
+        weights_id,
+        quote_id,
+        solve_quadratic_id,
+        order_quantities_id,
+    );
+    // P = 10 000
+    // S = 100
+    // C = 1000
 
     let num_registers = 8;
 
@@ -212,12 +160,7 @@ fn test_compute_1() {
     // these are exact expected fixed point decimal values as raw u128
     assert_eq!(
         order_quantites.data,
-        amount_vec![
-            0.000099990001950000,
-            0.000999900019500000,
-            0.099990001950000000
-        ]
-        .data
+        amount_vec![0.00999001995, 0.0999001995, 9.990019950].data
     );
 }
 

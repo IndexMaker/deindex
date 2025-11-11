@@ -200,6 +200,17 @@ impl Stack {
         Ok(())
     }
 
+    fn ldm(&mut self, pos: usize) -> Result<(), ErrorCode> {
+        let v1 = self
+            .registry
+            .get_mut(pos)
+            .ok_or_else(|| ErrorCode::OutOfRange)?;
+        let mut v2 = Operand::None;
+        swap(v1, &mut v2);
+        self.push(v2);
+        Ok(())
+    }
+
     fn op_str(&mut self, pos: usize) -> Result<(), ErrorCode> {
         let x = self
             .registry
@@ -1003,6 +1014,11 @@ where
                     let reg = code[pc] as usize;
                     pc += 1;
                     stack.ldr(reg)?;
+                }
+                OP_LDM => {
+                    let reg = code[pc] as usize;
+                    pc += 1;
+                    stack.ldm(reg)?;
                 }
                 OP_STR => {
                     let reg = code[pc] as usize;

@@ -23,6 +23,7 @@ amount-macros = { workspace = true }
 devil-macros = { workspace = true }
 labels-macros = { workspace = true }
 vector-macros = { workspace = true }
+icore = { workspace = true }
 
 [features]
 default = ["mini-alloc"]

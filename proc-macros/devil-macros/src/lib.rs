@@ -33,6 +33,7 @@ lazy_static::lazy_static! {
         m.insert("LDS", vec![StorageId]);  
         m.insert("LDD", vec![StackPos]);   
         m.insert("LDR", vec![RegisterId]); 
+        m.insert("LDM", vec![RegisterId]); 
 
         // 2. Data Storage & Register Access (20-23)
         m.insert("STL", vec![StorageId]);  

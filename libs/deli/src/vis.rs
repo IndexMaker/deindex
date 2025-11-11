@@ -7,6 +7,7 @@ pub const OP_LDS: u128 = 12; //   LDS <scalar_id>               ; no stack args 
 
 pub const OP_LDD: u128 = 13; //   LDD <pos>                     ; stack args = [TOS - pos] ; result = [TOS]; Load Duplicate (copy) of stack operand at [T-pos]. Pushes on TOS.
 pub const OP_LDR: u128 = 14; //   LDR <reg>                     ; no stack args ; result = [TOS - pos] ; Load value from Registry (R0-Rn). Pushes on TOS.
+pub const OP_LDM: u128 = 15; //   LDM <reg>                     ; no stack args ; result = [TOS - pos] ; Load value moving it out of Registry (R0-Rn). Value is removed from registry. Pushes on TOS.
 
 // 2. Data Storage & Register Access (20-23)
 pub const OP_STL: u128 = 20; //   STL <label_id>                ; stack args = [TOS: Labels] ; Store Labels object into VIO. Consumes TOS.
