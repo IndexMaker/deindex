@@ -17,6 +17,7 @@ This is ***Decentralised Index Maker (DeIndex)*** project.
 ### **Off-Chain Components**
 
 - *Frontend*       - Connects user wallet, and provides user interface to buy/sell ITP Index.
+- *Backend*        - Manages and stores database of ITP Indexes and provides additional metrics.
 - *Supplier (AP)*  - Asset Supplier / Authorized Provider for supplying assets from CEX / DEX.
 - *Relayer*        - RPC Relayer for collateral routing.
 - *Quoter*         - Poking bot for updating Index prices.
