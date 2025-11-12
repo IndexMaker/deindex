@@ -4,10 +4,10 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="baTC4Cxg6NbLOaKbVJR9-2" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="baTC4Cxg6NbLOaKbVJR9-2" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="120" y="320" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="baTC4Cxg6NbLOaKbVJR9-1" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="baTC4Cxg6NbLOaKbVJR9-1" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="110" y="330" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="ARYfZtA4eTBdnawsH5dG-15" value="&lt;font size=&quot;1&quot; style=&quot;&quot;&gt;&lt;b style=&quot;font-size: 24px;&quot;&gt;New Order: Instant Fill&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
@@ -31,7 +31,7 @@
         <mxCell id="PY2w5H_Z-JwWFCIUhqma-5" value="Daxos&lt;div&gt;(Orchestrator)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="PY2w5H_Z-JwWFCIUhqma-6" value="1. Create Index&lt;div&gt;w/ weights&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-7" target="PY2w5H_Z-JwWFCIUhqma-5" edge="1">
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-6" value="1. Place Index Order" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-7" target="PY2w5H_Z-JwWFCIUhqma-5" edge="1">
           <mxGeometry x="-0.1836" y="18" relative="1" as="geometry">
             <mxPoint y="1" as="offset" />
           </mxGeometry>
