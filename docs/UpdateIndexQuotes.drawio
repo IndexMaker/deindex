@@ -4,50 +4,69 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="at-eO359sfueZtB9V1y0-1" value="&lt;div&gt;&lt;span style=&quot;&quot;&gt;2. Get Asset Weights&lt;/span&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;&quot;&gt;5. Submit Index Quote&lt;/span&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;entryX=1;entryY=0.15;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="at-eO359sfueZtB9V1y0-7" target="at-eO359sfueZtB9V1y0-10">
-          <mxGeometry x="0.2849" y="-20" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-31" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="140" y="320" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-3" value="3. Get Asset&lt;div&gt;Prices&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;&amp;amp; Liquidity&lt;/span&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" edge="1" parent="1" source="at-eO359sfueZtB9V1y0-7" target="at-eO359sfueZtB9V1y0-12">
-          <mxGeometry x="-0.4667" y="20" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-32" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="130" y="330" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-4" value="4. Compute Index Quote" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;" edge="1" parent="1" source="at-eO359sfueZtB9V1y0-7" target="at-eO359sfueZtB9V1y0-13">
-          <mxGeometry y="-10" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-7" value="Daxos" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-8" value="1. Poke: Update Quotes" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" edge="1" parent="1" source="at-eO359sfueZtB9V1y0-18" target="at-eO359sfueZtB9V1y0-7">
-          <mxGeometry x="-0.4286" y="10" relative="1" as="geometry">
+        <mxCell id="at-eO359sfueZtB9V1y0-8" value="1. Poke: Update Index Quote" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="at-eO359sfueZtB9V1y0-18" target="LI26uThGqLtS4b5eKlUr-22" edge="1">
+          <mxGeometry x="-0.5714" y="10" relative="1" as="geometry">
             <mxPoint as="offset" />
             <mxPoint x="390" y="180" as="sourcePoint" />
+            <mxPoint x="500" y="240" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-10" value="Deck" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="120" y="520" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-12" value="Dres" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="710" y="340" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-13" value="Disolver" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="440" y="580" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-15" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Update Index Quotes&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;labelBackgroundColor=none;" vertex="1" parent="1">
+        <mxCell id="at-eO359sfueZtB9V1y0-15" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Update Index Quotes&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;labelBackgroundColor=none;" parent="1" vertex="1">
           <mxGeometry x="350" y="40" width="260" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-17" value="" style="group;labelBackgroundColor=none;" vertex="1" connectable="0" parent="1">
-          <mxGeometry x="460.63" y="100" width="78.75" height="90" as="geometry" />
+        <mxCell id="at-eO359sfueZtB9V1y0-17" value="" style="group;labelBackgroundColor=none;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="460.62" y="110" width="78.75" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-18" value="" style="ellipse;shape=umlControl;whiteSpace=wrap;html=1;labelBackgroundColor=none;" vertex="1" parent="at-eO359sfueZtB9V1y0-17">
+        <mxCell id="at-eO359sfueZtB9V1y0-18" value="" style="ellipse;shape=umlControl;whiteSpace=wrap;html=1;labelBackgroundColor=none;" parent="at-eO359sfueZtB9V1y0-17" vertex="1">
           <mxGeometry width="78.75" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="at-eO359sfueZtB9V1y0-19" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" vertex="1" parent="at-eO359sfueZtB9V1y0-17">
+        <mxCell id="at-eO359sfueZtB9V1y0-19" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" parent="at-eO359sfueZtB9V1y0-17" vertex="1">
           <mxGeometry x="29.370000000000005" y="30" width="20" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-19" value="2. Get Labels &amp;amp; Vector IDs:&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" edge="1" parent="1" source="LI26uThGqLtS4b5eKlUr-22" target="LI26uThGqLtS4b5eKlUr-23">
+          <mxGeometry x="0.9" y="-60" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-20" value="3. Get Labels &amp;amp; Vector IDs:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Prices, Slopes, Liquidity&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" edge="1" parent="1" source="LI26uThGqLtS4b5eKlUr-22" target="LI26uThGqLtS4b5eKlUr-24">
+          <mxGeometry x="-0.6429" y="40" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-21" value="4. Execute Update Quote stored procedure&lt;div&gt;passing arguments:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;li&gt;Order: Collateral, Spend, Minted&lt;/li&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Prices, Slopes, Liquidity&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" edge="1" parent="1" source="LI26uThGqLtS4b5eKlUr-22" target="LI26uThGqLtS4b5eKlUr-25">
+          <mxGeometry y="20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-22" value="Daxos&lt;div&gt;(Orchestrator)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-23" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="120" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-24" value="Gateway" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="800" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-25" value="DeVIL&lt;div&gt;(Vector Math)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="440" y="560" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-26" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="LI26uThGqLtS4b5eKlUr-27" target="LI26uThGqLtS4b5eKlUr-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-27" value="&lt;div&gt;Daxos loads details from Vault and Gateway, and passes them into stored procedure in DeVIL.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;DeVIL executes stored procedure, which:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Computes Index Price&lt;/li&gt;&lt;li&gt;Computes Index Slope&lt;/li&gt;&lt;li&gt;Computes Index Capacity&lt;/li&gt;&lt;li&gt;Updates Quote (vector): Capacity, Price, Slope&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;spacingTop=30;" vertex="1" parent="1">
+          <mxGeometry x="90" y="480" width="270" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-30" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="LI26uThGqLtS4b5eKlUr-29" target="at-eO359sfueZtB9V1y0-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="LI26uThGqLtS4b5eKlUr-29" value="&lt;div&gt;Depending on feasibility (cost of gas, and amount of ink consumed) we may want to &quot;poke&quot; to update more than one index at the time.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="95" width="240" height="120" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

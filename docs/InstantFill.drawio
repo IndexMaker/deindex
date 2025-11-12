@@ -4,74 +4,55 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-1" value="3. Compute Quote&lt;div&gt;for Index Order&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;5. Get Asset Weigths&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;entryX=1;entryY=0.15;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="ARYfZtA4eTBdnawsH5dG-5" target="ARYfZtA4eTBdnawsH5dG-9" edge="1">
-          <mxGeometry x="0.406" y="-24" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
+        <mxCell id="baTC4Cxg6NbLOaKbVJR9-2" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="120" y="320" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-2" value="2. Submit Index Order&lt;div&gt;&lt;br&gt;&lt;div&gt;10. Fill Index Order&lt;/div&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;" parent="1" source="ARYfZtA4eTBdnawsH5dG-5" target="ARYfZtA4eTBdnawsH5dG-8" edge="1">
-          <mxGeometry x="-0.5789" y="-30" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-3" value="7. Match Inventory" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="ARYfZtA4eTBdnawsH5dG-5" target="ARYfZtA4eTBdnawsH5dG-10" edge="1">
-          <mxGeometry x="-0.4667" y="20" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-4" value="6. Compute&lt;div&gt;Asset&amp;nbsp;&lt;span style=&quot;&quot;&gt;Orders&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;&quot;&gt;for Index Quantity&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;&quot;&gt;and Asset Weights&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;&quot;&gt;9. Compute filled&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;&quot;&gt;Index Quantity&lt;/span&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="ARYfZtA4eTBdnawsH5dG-5" target="ARYfZtA4eTBdnawsH5dG-11" edge="1">
-          <mxGeometry x="0.3043" y="10" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-14" value="11. Mint ITP Token" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="ARYfZtA4eTBdnawsH5dG-5" target="ARYfZtA4eTBdnawsH5dG-13" edge="1">
-          <mxGeometry x="0.1914" y="-21" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-5" value="Daxos" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-6" value="1. Place Order" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="ARYfZtA4eTBdnawsH5dG-7" target="ARYfZtA4eTBdnawsH5dG-5" edge="1">
-          <mxGeometry x="-0.1429" y="10" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-7" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" parent="1" vertex="1">
-          <mxGeometry x="485" y="140" width="30" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-8" value="Dior" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="120" y="340" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="bGViKLfivzPRnIi_2y5v-1" value="4. Quantity possible&lt;div&gt;is equal to order&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.25;entryY=1;entryDx=0;entryDy=0;curved=1;dashed=1;align=left;" edge="1" parent="1" source="ARYfZtA4eTBdnawsH5dG-9" target="ARYfZtA4eTBdnawsH5dG-5">
-          <mxGeometry x="-0.7368" y="-20" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-9" value="Deck" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="120" y="520" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-12" value="8. Returns matched&lt;div&gt;quantities and execution prices&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;dashed=1;labelBackgroundColor=none;" parent="1" source="ARYfZtA4eTBdnawsH5dG-10" target="ARYfZtA4eTBdnawsH5dG-5" edge="1">
-          <mxGeometry x="0.0345" y="20" relative="1" as="geometry">
-            <mxPoint x="660" y="460" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="740" y="440" />
-              <mxPoint x="530" y="440" />
-            </Array>
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-10" value="Dres" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="710" y="340" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-11" value="Disolver" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="440" y="630" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="ARYfZtA4eTBdnawsH5dG-13" value="Dion" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="120" y="160" width="120" height="60" as="geometry" />
+        <mxCell id="baTC4Cxg6NbLOaKbVJR9-1" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="110" y="330" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="ARYfZtA4eTBdnawsH5dG-15" value="&lt;font size=&quot;1&quot; style=&quot;&quot;&gt;&lt;b style=&quot;font-size: 24px;&quot;&gt;New Order: Instant Fill&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="340" y="40" width="280" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-2" value="2. Get Labels &amp;amp; Vector IDs:&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;Find vector in mapping:&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;User =&amp;gt; Order (vector ID)&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-8" edge="1">
+          <mxGeometry x="0.7273" y="-60" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-3" value="3. Get Labels &amp;amp; Vector IDs:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-9" edge="1">
+          <mxGeometry x="-0.6429" y="40" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-4" value="4. Execute Buy Order stored procedure&lt;div&gt;passing arguments:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;li&gt;Order: Collateral, Spend, Minted&lt;/li&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-10" edge="1">
+          <mxGeometry y="20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-5" value="Daxos&lt;div&gt;(Orchestrator)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-6" value="1. Create Index&lt;div&gt;w/ weights&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-7" target="PY2w5H_Z-JwWFCIUhqma-5" edge="1">
+          <mxGeometry x="-0.1836" y="18" relative="1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-7" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" parent="1" vertex="1">
+          <mxGeometry x="485" y="140" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-8" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="100" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-9" value="Gateway" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="800" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-10" value="DeVIL&lt;div&gt;(Vector Math)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="440" y="560" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-15" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-14" target="PY2w5H_Z-JwWFCIUhqma-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-14" value="&lt;div&gt;Daxos loads details from Vault and Gateway, and passes them into stored procedure in DeVIL.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;DeVIL executes stored procedure, which:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Computes Index Quantity for Collateral Amount&lt;/li&gt;&lt;li&gt;Caps Index Quantity with Capacity&lt;/li&gt;&lt;li&gt;Generates Individual Asset Orders&lt;/li&gt;&lt;li&gt;Matches Asset Orders with Demand&lt;/li&gt;&lt;li&gt;Updates Delta using Supply vs Demand formula&lt;/li&gt;&lt;li&gt;Updates Collateral Remaining and Spent on user&#39;s Order&lt;/li&gt;&lt;li&gt;Updates Index Token Minted on user&#39;s Order&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;Daxos then reads resulting data, and it may:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Mint ITP Token by calling Vault&#39;s method&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;spacingTop=30;" parent="1" vertex="1">
+          <mxGeometry x="40" y="440" width="360" height="320" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

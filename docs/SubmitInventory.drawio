@@ -4,62 +4,79 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-2" value="2. Submit Inventory" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" edge="1" parent="1" source="kzuBAhoh1cVyKMKMU25t-4" target="kzuBAhoh1cVyKMKMU25t-7">
-          <mxGeometry x="-0.4667" y="20" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-11" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="140" y="320" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-14" value="4. (option)" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;" edge="1" parent="1" source="kzuBAhoh1cVyKMKMU25t-4" target="kzuBAhoh1cVyKMKMU25t-13">
-          <mxGeometry x="0.0527" y="-18" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-10" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="130" y="330" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-16" value="3. (option)" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;" edge="1" parent="1" source="kzuBAhoh1cVyKMKMU25t-4" target="kzuBAhoh1cVyKMKMU25t-15">
-          <mxGeometry x="-0.071" y="13" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-4" value="Daxos" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-5" value="1. Submit Inventory" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" edge="1" parent="1" source="kzuBAhoh1cVyKMKMU25t-11" target="kzuBAhoh1cVyKMKMU25t-4">
+        <mxCell id="kzuBAhoh1cVyKMKMU25t-5" value="1. Submit Inventory" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="kzuBAhoh1cVyKMKMU25t-11" target="Mw5aA_RtsxYuASnJjePk-4" edge="1">
           <mxGeometry x="-0.4286" y="10" relative="1" as="geometry">
             <mxPoint as="offset" />
-            <mxPoint x="390" y="180" as="sourcePoint" />
+            <mxPoint x="390" y="200" as="sourcePoint" />
+            <mxPoint x="500" y="280" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-7" value="Dres" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="710" y="340" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-9" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Submit Inventory&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;labelBackgroundColor=none;" vertex="1" parent="1">
+        <mxCell id="kzuBAhoh1cVyKMKMU25t-9" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Submit Inventory&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;labelBackgroundColor=none;" parent="1" vertex="1">
           <mxGeometry x="370" y="40" width="220" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-10" value="" style="group;labelBackgroundColor=none;verticalAlign=middle;horizontal=1;" vertex="1" connectable="0" parent="1">
-          <mxGeometry x="460.63" y="100" width="78.75" height="90" as="geometry" />
+        <mxCell id="kzuBAhoh1cVyKMKMU25t-10" value="" style="group;labelBackgroundColor=none;verticalAlign=middle;horizontal=1;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="460.63" y="120" width="78.75" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-11" value="" style="ellipse;shape=umlControl;whiteSpace=wrap;html=1;labelBackgroundColor=none;" vertex="1" parent="kzuBAhoh1cVyKMKMU25t-10">
+        <mxCell id="kzuBAhoh1cVyKMKMU25t-11" value="" style="ellipse;shape=umlControl;whiteSpace=wrap;html=1;labelBackgroundColor=none;" parent="kzuBAhoh1cVyKMKMU25t-10" vertex="1">
           <mxGeometry width="78.75" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-12" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" vertex="1" parent="kzuBAhoh1cVyKMKMU25t-10">
+        <mxCell id="kzuBAhoh1cVyKMKMU25t-12" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" parent="kzuBAhoh1cVyKMKMU25t-10" vertex="1">
           <mxGeometry x="29.370000000000005" y="30" width="20" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-13" value="Process Batch Orders" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="260" y="480" width="120" height="60" as="geometry" />
+        <mxCell id="kzuBAhoh1cVyKMKMU25t-17" value="CEX" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="660" y="125" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-15" value="Update Index Quotes" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="480" y="520" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-17" value="CEX" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="660" y="150" width="120" height="80" as="geometry" />
-        </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-19" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shape=link;" edge="1" parent="1" source="kzuBAhoh1cVyKMKMU25t-11" target="kzuBAhoh1cVyKMKMU25t-17">
+        <mxCell id="kzuBAhoh1cVyKMKMU25t-19" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shape=link;" parent="1" source="kzuBAhoh1cVyKMKMU25t-11" target="kzuBAhoh1cVyKMKMU25t-17" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-20" value="DEX" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="240" y="160" width="120" height="80" as="geometry" />
+        <mxCell id="kzuBAhoh1cVyKMKMU25t-20" value="DEX" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="230" y="125" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="kzuBAhoh1cVyKMKMU25t-21" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shape=link;" edge="1" parent="1" source="kzuBAhoh1cVyKMKMU25t-11" target="kzuBAhoh1cVyKMKMU25t-20">
+        <mxCell id="kzuBAhoh1cVyKMKMU25t-21" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shape=link;" parent="1" source="kzuBAhoh1cVyKMKMU25t-11" target="kzuBAhoh1cVyKMKMU25t-20" edge="1">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-2" value="2. Get Labels &amp;amp; Vector IDs:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Supply, Demand, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" edge="1" parent="1" source="Mw5aA_RtsxYuASnJjePk-4" target="Mw5aA_RtsxYuASnJjePk-6">
+          <mxGeometry x="-0.6429" y="40" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-3" value="3. Execute Update Inventory stored procedure&lt;div&gt;passing arguments:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Supply, Demand, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" edge="1" parent="1" source="Mw5aA_RtsxYuASnJjePk-4" target="Mw5aA_RtsxYuASnJjePk-7">
+          <mxGeometry y="20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-12" value="Read Delta so that we can&lt;div&gt;rebalance supply&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;curved=1;endArrow=none;endFill=0;startArrow=async;startFill=1;align=right;" edge="1" parent="1" source="Mw5aA_RtsxYuASnJjePk-4" target="kzuBAhoh1cVyKMKMU25t-11">
+          <mxGeometry x="-0.0236" y="10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="370" />
+              <mxPoint x="390" y="190" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-4" value="Daxos&lt;div&gt;(Orchestrator)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-5" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="120" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-6" value="Gateway" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="800" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-7" value="DeVIL&lt;div&gt;(Vector Math)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="440" y="560" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-8" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="Mw5aA_RtsxYuASnJjePk-9" target="Mw5aA_RtsxYuASnJjePk-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Mw5aA_RtsxYuASnJjePk-9" value="&lt;div&gt;Daxos loads details from Gateway, and passes them into stored procedure in DeVIL.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;DeVIL executes stored procedure, which:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Computes Delta using Supply vs Demand formula&lt;br&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;spacingTop=30;" vertex="1" parent="1">
+          <mxGeometry x="90" y="480" width="270" height="200" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

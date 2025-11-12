@@ -11,22 +11,23 @@ This is ***Decentralised Index Maker (DeIndex)*** project.
 
 There is plan to produce several smart-contracts:
 
-- `daxos`     - Decentralised Matching Engine
-- `decks`     - Decentralised Index Definitions
-- `decor`     - Decentralised Collateral Router
-- `dion`      - Decentralised ITP Token Minting
-- `dior`      - Decentralised Index Order Manager
-- `disolver`  - Decentralised Index Order Solver
-- `dres`      - Decentralised Inventory Manager
-- `drip`      - Decentralised Batch Manager
+- *Vault*     - Represents ITP Token, implements *ERC20*, and stores: asset weights, prices, and user's orders.
+- *Gateway*   - Stores asset market data, and inventory state, i.e. supply, demand and delta.
+- *Daxos*     - Orchestrated all business logic.
+- *DeVIL*     - Executes Vector Math programs such as: order execution, quote update, supply update.
 
 ### **Off-Chain Components**
 
 And we will have an off-chain robot:
 
-- `ap`      - Authorized Provider for supplying assets from CEX / DEX
-- `solver`  - Solver off-loading `dematcher` by computing fill "suggestions"
-- `relayer` - RPC Relayer for collateral routing
+- *Frontend*       - Connects user wallet, and provides user interface to buy/sell ITP Index.
+- *Supplier (AP)*  - Asset Supplier / Authorized Provider for supplying assets from CEX / DEX.
+- *Relayer*        - RPC Relayer for collateral routing.
+- *Quoter*         - Poking bot for updating Index prices.
+
+All of the above off-chain components interact exclusively with *Daxos*
+contract, except *Vault* contracts can be interacted via *IERC20* interface,
+i.e. as ITP tokens.
 
 ### **Interaction**
 
@@ -39,24 +40,9 @@ Here *Issuer* wants to add new index to the system.
 #### New Order: Instant Fill
 
 Here *User* places new order, which gets instantly filled, and
-and ITP Index token is minted by *Dion*.
+and ITP Index token is minted by *Vault*.
 
 <img src="./docs/InstantFill.jpg">
-
-#### New Order: Enqueue into Batch Orders
-
-Here *User* places new order, which is too big for an instant fill,
-and it gets placed into batch orders managed by *Drip*.
-
-<img src="./docs/EnqueueIntoBatchOrders.jpg">
-
-#### Process Batch Orders
-
-Here external service sends a *Poke* to process next batch iteration, where
-some orders are sent to matching against inventory, and some receive ITP Index
-token minted, and all the unfilled orders are continued in next batch.
-
-<img src="./docs/ProcessBatchOrders.jpg">
 
 #### Update Index Quotes
 
@@ -72,63 +58,17 @@ Here external service adds new *Inventory* to the pool.
 <img src="./docs/SubmitInventory.jpg">
 
 
-#### Previous Design (slightly changed now - TODO: update this document)
+## Summary
 
-<img src="./docs/DeIndex2.jpg">
+This design delegates all vector math computation to Vector IL virtual machine, which is critical
+for achieving high performance zero-copy, minimum blockchain load/store overhead, and yet plenty
+of WASM space for implementing business logic in the client contracts, i.e. *Vault*, *Gateway*, and
+*Daxos*.
 
-The flow illustrates an intricate, multi-contract interaction designed to
-process the creation (minting) of an index token (ITP ERC20) in exchange for
-underlying collateral, using both instant on-chain matching and off-chain batch
-optimization (Solver).
+### Smart-Contracts
 
-|Smart Contract/Entity|Role in DeFi Architecture|Key Function|
-|---|---|---|
-|Dior (Index Order Mgr)|Core Protocol Contract|Manages the order lifecycle| owns the Index Book data| and orchestrates calls to other contracts (Matching| Minting).|
-|Decor (Collateral Mgr)|Collateral/Vault Contract|Handles the secure receipt and lock-up of user collateral (likely using Permit20 approval).|
-|Dematcher (Matching Eng)|Matching Logic Contract|Executes the immediate, on-chain matching logic against available liquidity in the books.|
-|Dimer (Inventory Mgr)|Liquidity/Asset Contract|Manages the balances and updates the supply/demand for the individual component assets of the index.|
-|Deminter (ITP ERC20)|Token Standard Contract|The contract for the Index Tracking Token (ITP) itself, which handles the Minting of new tokens to the user.|
-|Debatcher (Batching)|Queue Management Contract|Holds non-instantly fillable orders and interacts with the external Solver for optimization.|
-|Solver|External HFT Agent|An off-chain, meticulous optimizer that determines the best execution for batched orders.|
 
-|Data Structure|Content|
-|---|---|
-|Index Order Book|Bids & Asks, Demand (orders), Supply (in-stock), Liquidity (on-market), Price (as quoted), Last Update Time.|
-|Asset Order Books|Bids & Asks, Supply (in-stock), Liquidity (on-market), Price (as quoted), Last Update Time (per asset).|
-|Index|owner, assets, weights (The index definition).|
-|Index Order|collateral deposited, collateral spend (minted), collateral engaged (in-progress).|
 
-### The Flow as Smart Contract Interactions
-
-#### Flow A: Instant Fill (On-Chain)
-
-This is the standard, fast path, executed atomically within a single transaction if possible.
-
-1. Actor initiates: The Actor (user) sends a transaction authorizing Decor to spend their collateral using the 1. Send Permit20 signature/call.
-
-1. Decor Logic: 2. Confirm Collateral checks the collateral in the contract.
-
-1. Order Submission: Decor calls Dior (3. Submit Order), passing the user's details and collateral status.
-
-1. Matching Attempt: Dior calls Dematcher (4. Match Instant Fill).
-
-1. Book Update: Dematcher successfully executes the fill, updating state variables in the Asset Order Books and notifying Dimer (8. Submit Inventory Update) to update its internal supply records.
-
-1. Finalization: Dematcher calls back to Dior (A.1 Instant Fill - Fully Filled). Dior then calls Deminter (A.2. Mint Token) to finalize the index token transfer to the user.
-
-#### Flow B: Batch / Solve (Off-Chain Optimization)
-
-This path handles complex or large orders that require external, potentially more "meticulous" computation for the best price execution (a common pattern in DeFi, similar to AMMs or decentralized exchanges).
-
-1. Dematcher → Debatcher: If the instant match is incomplete, the remaining order portion is placed into the Debatcher smart contract queue.
-
-1. External Solver Operation: The Solver (an external, off-chain service, maybe run by a sequencer or specialized agent) pulls the batch (B.2 Get Next Batch), determines the optimal way to fill those orders, and sends the calculated fill details back to the Debatcher contract (B.3 Submit Fill Suggestions).
-
-1. On-Chain Execution: The Debatcher then triggers the Dematcher (B.4 Match Suggested Fills) to execute the fills based on the Solver's suggestions.
-
-#### Summary
-
-This architecture showcases a sophisticated DeFi design utilizing multiple specialized contracts for core functions (Collateral, Order Management, Matching, and Minting), while incorporating an off-chain component (Solver) to maintain efficiency and competitive pricing for complex or batched orders.
 
 
 ## Development
