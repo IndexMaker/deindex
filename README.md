@@ -9,16 +9,12 @@ This is ***Decentralised Index Maker (DeIndex)*** project.
 
 ### **On-Chain Components:**
 
-There is plan to produce several smart-contracts:
-
 - *Vault*     - Represents ITP Token, implements *ERC20*, and stores: asset weights, prices, and user's orders.
 - *Gateway*   - Stores asset market data, and inventory state, i.e. supply, demand and delta.
-- *Daxos*     - Orchestrated all business logic.
+- *Daxos*     - Orchestrates all business logic.
 - *DeVIL*     - Executes Vector Math programs such as: order execution, quote update, supply update.
 
 ### **Off-Chain Components**
-
-And we will have an off-chain robot:
 
 - *Frontend*       - Connects user wallet, and provides user interface to buy/sell ITP Index.
 - *Supplier (AP)*  - Asset Supplier / Authorized Provider for supplying assets from CEX / DEX.
