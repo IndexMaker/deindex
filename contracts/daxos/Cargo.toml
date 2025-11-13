@@ -2,7 +2,7 @@
 name = "daxos"
 version = "0.1.0"
 edition = "2021"
-description = "Arbitrum Stylus Decentralised Matching Engine and Order Orchestrator"
+description = "Arbitrum Stylus Decentralised Orchestrator"
 
 [dependencies]
 alloy-primitives = { workspace = true }

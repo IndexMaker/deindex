@@ -69,7 +69,7 @@ impl VectorIO for TestVectorIO {
 ///
 /// NOTE: while VIL is an assembly language, it is limitted exclusively to perform vector math, and
 /// instruction set is designed to particularly match our requirements to execute index orders and
-/// update inventory.
+/// update market.
 ///
 /// TBD: examine real-life gas usage and limits.
 ///
@@ -82,7 +82,7 @@ fn test_compute_1() {
     let asset_names_id = 1001;
     let weights_id = 1002;
     let quote_id = 1003;
-    let inventory_asset_names_id = 101;
+    let market_asset_names_id = 101;
     let supply_long_id = 102;
     let supply_short_id = 103;
     let demand_long_id = 104;
@@ -103,7 +103,7 @@ fn test_compute_1() {
     vio.store_vector(index_order_id, amount_vec![1000.00, 0, 0])
         .unwrap();
 
-    vio.store_labels(inventory_asset_names_id, label_vec![51, 52, 53, 54, 55])
+    vio.store_labels(market_asset_names_id, label_vec![51, 52, 53, 54, 55])
         .unwrap();
 
     vio.store_vector(demand_short_id, amount_vec![0, 0, 0.01, 0, 0])
@@ -139,7 +139,7 @@ fn test_compute_1() {
         asset_names_id,
         weights_id,
         quote_id,
-        inventory_asset_names_id,
+        market_asset_names_id,
         supply_long_id,
         supply_short_id,
         demand_long_id,

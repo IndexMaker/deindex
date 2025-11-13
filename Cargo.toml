@@ -4,7 +4,7 @@ members = [
     # Stylus Contract Packages
     "contracts/daxos",
     "contracts/devil",
-    "contracts/gateway",
+    "contracts/market",
     "contracts/vault",
 
     # Library Packages

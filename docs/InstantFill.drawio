@@ -18,12 +18,12 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="PY2w5H_Z-JwWFCIUhqma-3" value="3. Get Labels &amp;amp; Vector IDs:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-9" edge="1">
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-3" value="3. Get Labels &amp;amp; Vector IDs:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Market Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-9" edge="1">
           <mxGeometry x="-0.6429" y="40" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="PY2w5H_Z-JwWFCIUhqma-4" value="4. Execute Buy Order stored procedure&lt;div&gt;passing arguments:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;li&gt;Order: Collateral, Spend, Minted&lt;/li&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-10" edge="1">
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-4" value="4. Execute Buy Order stored procedure&lt;div&gt;passing arguments:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;li&gt;Order: Collateral, Spend, Minted&lt;/li&gt;&lt;li&gt;Market Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-10" edge="1">
           <mxGeometry y="20" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -42,7 +42,7 @@
         <mxCell id="PY2w5H_Z-JwWFCIUhqma-8" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="100" y="340" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="PY2w5H_Z-JwWFCIUhqma-9" value="Gateway" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-9" value="Market" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="800" y="340" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="PY2w5H_Z-JwWFCIUhqma-10" value="DeVIL&lt;div&gt;(Vector Math)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
@@ -51,7 +51,7 @@
         <mxCell id="PY2w5H_Z-JwWFCIUhqma-15" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-14" target="PY2w5H_Z-JwWFCIUhqma-5" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="PY2w5H_Z-JwWFCIUhqma-14" value="&lt;div&gt;Daxos loads details from Vault and Gateway, and passes them into stored procedure in DeVIL.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;DeVIL executes stored procedure, which:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Computes Index Quantity for Collateral Amount&lt;/li&gt;&lt;li&gt;Caps Index Quantity with Capacity&lt;/li&gt;&lt;li&gt;Generates Individual Asset Orders&lt;/li&gt;&lt;li&gt;Matches Asset Orders with Demand&lt;/li&gt;&lt;li&gt;Updates Delta using Supply vs Demand formula&lt;/li&gt;&lt;li&gt;Updates Collateral Remaining and Spent on user&#39;s Order&lt;/li&gt;&lt;li&gt;Updates Index Token Minted on user&#39;s Order&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;Daxos then reads resulting data, and it may:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Mint ITP Token by calling Vault&#39;s method&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;spacingTop=30;" parent="1" vertex="1">
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-14" value="&lt;div&gt;Daxos loads details from Vault and Market, and passes them into stored procedure in DeVIL.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;DeVIL executes stored procedure, which:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Computes Index Quantity for Collateral Amount&lt;/li&gt;&lt;li&gt;Caps Index Quantity with Capacity&lt;/li&gt;&lt;li&gt;Generates Individual Asset Orders&lt;/li&gt;&lt;li&gt;Matches Asset Orders with Demand&lt;/li&gt;&lt;li&gt;Updates Delta using Supply vs Demand formula&lt;/li&gt;&lt;li&gt;Updates Collateral Remaining and Spent on user&#39;s Order&lt;/li&gt;&lt;li&gt;Updates Index Token Minted on user&#39;s Order&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;Daxos then reads resulting data, and it may:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Mint ITP Token by calling Vault&#39;s method&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;spacingTop=30;" parent="1" vertex="1">
           <mxGeometry x="40" y="440" width="360" height="320" as="geometry" />
         </mxCell>
       </root>

@@ -1,70 +1,137 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8">
   <diagram name="Page-1" id="0TQ-eJyStJKI9h-Djc0A">
-    <mxGraphModel dx="984" dy="631" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="2327" dy="742" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="HvXF-x0DO3te3rI5t1Wd-1" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="140" y="320" width="120" height="60" as="geometry" />
+          <mxGeometry x="140" y="520" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="HvXF-x0DO3te3rI5t1Wd-2" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="130" y="330" width="120" height="60" as="geometry" />
+          <mxGeometry x="130" y="530" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="bL7tILl7jsjW9v_8rGP5-7" value="5. Setup" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;labelBackgroundColor=none;" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-4" edge="1">
-          <mxGeometry x="-0.3776" y="-18" relative="1" as="geometry">
-            <mxPoint x="1" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="bL7tILl7jsjW9v_8rGP5-9" value="3. Get Labels &amp;amp; Vector IDs:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Inventory Prices, Slopes, and Liquidity&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-8" edge="1">
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-9" value="10. Get Labels &amp;amp; Vector IDs:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Market Asset Names&lt;/li&gt;&lt;li&gt;Market Prices, Slopes, and Liquidity&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-8" edge="1">
           <mxGeometry x="-0.7857" y="30" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="bL7tILl7jsjW9v_8rGP5-11" value="2. Submit Labels &amp;amp; Vectors:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li style=&quot;&quot;&gt;Asset Names&lt;/li&gt;&lt;li style=&quot;&quot;&gt;Asset Weights&lt;/li&gt;&lt;li style=&quot;&quot;&gt;Quote (Capacity, Price, Slopt)&lt;/li&gt;&lt;/ul&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;4. Compute Quote:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Price &amp;amp; Capacity (Quote Vector)&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-10" edge="1">
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-11" value="5. Submit Labels &amp;amp; Vectors:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li style=&quot;&quot;&gt;Asset Names&lt;/li&gt;&lt;li style=&quot;&quot;&gt;Asset Weights&lt;/li&gt;&lt;li style=&quot;&quot;&gt;Quote (Capacity, Price, Slopt)&lt;/li&gt;&lt;/ul&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;11. Compute Quote:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Price &amp;amp; Capacity (Quote Vector)&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-10" edge="1">
           <mxGeometry y="10" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="bL7tILl7jsjW9v_8rGP5-1" value="Daxos&lt;div&gt;(Orchestrator)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-20" value="&lt;div&gt;4. Deploy new Vault contract&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;&quot;&gt;6. Setup&lt;/span&gt;&lt;br&gt;&lt;/div&gt;9. Activate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" edge="1" parent="1" source="bL7tILl7jsjW9v_8rGP5-1" target="bL7tILl7jsjW9v_8rGP5-4">
+          <mxGeometry x="0.6" y="-30" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="bL7tILl7jsjW9v_8rGP5-3" value="1. Create Index&lt;div&gt;w/ weights&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="bL7tILl7jsjW9v_8rGP5-2" target="bL7tILl7jsjW9v_8rGP5-1" edge="1">
-          <mxGeometry x="-0.1836" y="18" relative="1" as="geometry">
-            <mxPoint y="1" as="offset" />
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-1" value="Daxos&lt;div&gt;(Orchestrator)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="440" y="540" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-3" value="3. Setup new Vault&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;w/ weights&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;text-align: right; background-color: rgb(255, 255, 255);&quot;&gt;8. Submit vote&lt;/span&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;edgeStyle=orthogonalEdgeStyle;" parent="1" source="hDSGfBEv0EEIX2UuDP_n-2" target="bL7tILl7jsjW9v_8rGP5-1" edge="1">
+          <mxGeometry x="-0.5238" y="10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="500" y="420" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="510" y="430" />
+              <mxPoint x="510" y="430" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-4" value="1. Fill in the form&lt;div&gt;to create an index&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;" edge="1" parent="1" source="bL7tILl7jsjW9v_8rGP5-2" target="hDSGfBEv0EEIX2UuDP_n-2">
+          <mxGeometry x="-0.6" y="20" relative="1" as="geometry">
+            <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="bL7tILl7jsjW9v_8rGP5-2" value="Issuer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" parent="1" vertex="1">
-          <mxGeometry x="485" y="140" width="30" height="60" as="geometry" />
+          <mxGeometry x="260" y="270" width="30" height="60" as="geometry" />
         </mxCell>
         <mxCell id="bL7tILl7jsjW9v_8rGP5-4" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="120" y="340" width="120" height="60" as="geometry" />
+          <mxGeometry x="120" y="540" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="bL7tILl7jsjW9v_8rGP5-8" value="Gateway" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="840" y="340" width="120" height="60" as="geometry" />
+        <mxCell id="bL7tILl7jsjW9v_8rGP5-8" value="Market" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="825" y="540" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="bL7tILl7jsjW9v_8rGP5-10" value="DeVIL&lt;div&gt;(Vector Math)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
-          <mxGeometry x="440" y="560" width="120" height="60" as="geometry" />
+          <mxGeometry x="440" y="760" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="bL7tILl7jsjW9v_8rGP5-12" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Create Index &amp;amp; Initial Quote&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="310" y="40" width="340" height="40" as="geometry" />
+          <mxGeometry x="330" y="140" width="340" height="40" as="geometry" />
         </mxCell>
         <mxCell id="vXvVkCZfE6SKROoSSaor-2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" parent="1" source="vXvVkCZfE6SKROoSSaor-1" target="bL7tILl7jsjW9v_8rGP5-4" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="vXvVkCZfE6SKROoSSaor-1" value="Vault contract created by Issuer, and its address is submitted (by Issuer) to Daxos, which will setup the Vault to be part of the system.&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Vault contract stores IDs of the labels and vectors:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;and also a mapping:&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;User =&amp;gt; Order (vector ID)&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;spacingTop=30;" parent="1" vertex="1">
-          <mxGeometry x="40" y="460" width="280" height="240" as="geometry" />
+          <mxGeometry x="40" y="680" width="280" height="240" as="geometry" />
         </mxCell>
         <mxCell id="vXvVkCZfE6SKROoSSaor-4" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" parent="1" source="vXvVkCZfE6SKROoSSaor-3" target="bL7tILl7jsjW9v_8rGP5-8" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="vXvVkCZfE6SKROoSSaor-3" value="Gateway stores IDs of the labels and vectors:&lt;div&gt;&lt;ul&gt;&lt;li&gt;Inventory Asset Names&lt;/li&gt;&lt;li&gt;Asset Prices, Slopes, Liquidity&lt;/li&gt;&lt;li&gt;Supply, Demand, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;" parent="1" vertex="1">
-          <mxGeometry x="785" y="470" width="230" height="160" as="geometry" />
+        <mxCell id="vXvVkCZfE6SKROoSSaor-3" value="Market stores IDs of the labels and vectors:&lt;div&gt;&lt;ul&gt;&lt;li&gt;Market Asset Names&lt;/li&gt;&lt;li&gt;Asset Prices, Slopes, Liquidity&lt;/li&gt;&lt;li&gt;Supply, Demand, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;" parent="1" vertex="1">
+          <mxGeometry x="770" y="667" width="230" height="160" as="geometry" />
         </mxCell>
         <mxCell id="vXvVkCZfE6SKROoSSaor-6" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" parent="1" source="vXvVkCZfE6SKROoSSaor-5" target="bL7tILl7jsjW9v_8rGP5-10" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="vXvVkCZfE6SKROoSSaor-5" value="DeVIL VM&lt;sup&gt;2&lt;/sup&gt;&amp;nbsp;stands for Decentralised Vector Intermediate Language Virtual Machine (VIL) in Virtual Machine (WASM).&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;DeVIL provides a VM&lt;sup&gt;2&lt;/sup&gt;&amp;nbsp;specialised in performing Vector Math operations, and VIL is an Assembly language allowing users to run Vector Programs. Instructions such as LDL, LDV, STL, STV load and store labels and vectors from/to blockchain, and instructions such as ADD, SUB, MUL, DIV perform vector operations (addition, subtraction, multiplication, division).&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;DeVIL allows us to solve complex vector math problems without breaching 24KiB limit of WASM Stylus contract size. While same math algorithms can be implemented directly in WASM, they would consume all 24KiB of WASM and additionally introduce data serialisation in case we wanted to have multiple contracts. By using DeVIL VM&lt;sup&gt;2&lt;/sup&gt; we completely bypass the 24KiB limitation, as well as we work directly with data completely avoiding unnecessary serialization of data.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;" parent="1" vertex="1">
-          <mxGeometry x="200" y="740" width="600" height="250" as="geometry" />
+          <mxGeometry x="400" y="870" width="600" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-18" value="12. Vault active (event)" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;edgeStyle=orthogonalEdgeStyle;curved=1;dashed=1;startArrow=async;startFill=1;dashPattern=8 8;" edge="1" parent="1" source="hDSGfBEv0EEIX2UuDP_n-1" target="bL7tILl7jsjW9v_8rGP5-1">
+          <mxGeometry x="0.0222" y="-20" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="770" y="440" />
+              <mxPoint x="530" y="440" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-22" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;endArrow=none;endFill=0;shape=link;" edge="1" parent="1" source="hDSGfBEv0EEIX2UuDP_n-1" target="hDSGfBEv0EEIX2UuDP_n-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-1" value="Backend" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="710" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-3" value="2. Submit form" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;" edge="1" parent="1" source="hDSGfBEv0EEIX2UuDP_n-2" target="hDSGfBEv0EEIX2UuDP_n-1">
+          <mxGeometry x="-0.3333" y="10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-2" value="Frontend" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="440" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-10" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="115" y="210" width="130" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-8" value="" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="hDSGfBEv0EEIX2UuDP_n-10">
+          <mxGeometry width="130" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-6" value="DAO" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" vertex="1" parent="hDSGfBEv0EEIX2UuDP_n-10">
+          <mxGeometry x="55" y="45" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-7" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" vertex="1" parent="hDSGfBEv0EEIX2UuDP_n-10">
+          <mxGeometry x="75" y="35" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-9" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" vertex="1" parent="hDSGfBEv0EEIX2UuDP_n-10">
+          <mxGeometry x="30" y="35" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-16" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="hDSGfBEv0EEIX2UuDP_n-15" target="hDSGfBEv0EEIX2UuDP_n-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-15" value="&lt;span style=&quot;background-color: initial;&quot;&gt;Issuer make a proposal of new ITP Index by filling-in the form served by Frontend. This form is then submitted to Backend. Then Issuer signs message&amp;nbsp;to tell Daxos to deploy new Vault contract and set it up.&lt;/span&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Deployed Vault is inactive until DAO passes vote.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;" vertex="1" parent="1">
+          <mxGeometry x="-190" y="200" width="230" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-19" value="7. Vote" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=1;" edge="1" parent="1" source="hDSGfBEv0EEIX2UuDP_n-8" target="hDSGfBEv0EEIX2UuDP_n-2">
+          <mxGeometry x="-0.1139" y="10" relative="1" as="geometry">
+            <mxPoint x="410" y="350" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="180" y="400" />
+              <mxPoint x="480" y="400" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hDSGfBEv0EEIX2UuDP_n-21" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="260" width="60" height="80" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

@@ -6,7 +6,7 @@ pub fn update_quote(
     index_asset_names_id: u128,
     _weights_id: u128,
     _quote_id: u128,
-    _inventory_asset_names_id: u128,
+    _market_asset_names_id: u128,
     _asset_prices_id: u128,
     _asset_slopes_id: u128,
     _asset_liquidity: u128,

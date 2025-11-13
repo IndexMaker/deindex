@@ -37,7 +37,7 @@ sol! {
         function execute(uint8[] memory code, uint128 num_registry) external;
     }
 
-    /// Gateway monitors supply and demand for assets
+    /// Market monitors supply and demand for assets
     ///
     /// Vault orders update demand, while authorised provider updates supply.
     /// The delta monitors difference between suppy and demand, and is critical
@@ -45,12 +45,12 @@ sol! {
     ///     a) authorised provider to know which assets to buy/sell
     ///     b) daxos to match new orders or halt (throttle order over time)
     ///
-    /// All data is stored as vectors on DeVIL virtual machine, and Gateway
+    /// All data is stored as vectors on DeVIL virtual machine, and Market
     /// itself only organises handles to those vectors and submits VIL programs
     /// to execute. The results of those programs executions stay on DeVIL, but
     /// can be accessed when required by calling Devil::get(vector_id) method.
     ///
-    interface IGateway  {
+    interface IMarket  {
         function setup(address owner, address devil) external;
 
         function submitSupply() external;
@@ -99,7 +99,7 @@ sol! {
 pub struct Daxos {
     owner: StorageAddress,
     devil: StorageAddress,
-    gateway: StorageAddress,
+    market: StorageAddress,
     vaults: StorageMap<U128, StorageAddress>,
 }
 
@@ -129,12 +129,12 @@ impl Daxos {
         &mut self,
         owner: Address,
         devil: Address,
-        gateway: Address,
+        market: Address,
     ) -> Result<(), Vec<u8>> {
         self.check_owner(self.vm().tx_origin())?;
         self.owner.set(owner);
         self.devil.set(devil);
-        self.gateway.set(gateway);
+        self.market.set(market);
         Ok(())
     }
 
@@ -175,14 +175,14 @@ impl Daxos {
         };
         self.vm().call(&self, vault_address, &submit.abi_encode())?;
 
-        // TODO: We need to set these up. They are from Vault and Gateway.
+        // TODO: We need to set these up. They are from Vault and Market.
         let index_order_id = 10001;
         let executed_asset_quantities_id = 10002;
         let executed_index_quantities_id = 10003;
         let asset_names_id = 1001;
         let weights_id = 1002;
         let quote_id = 1003;
-        let inventory_asset_names_id = 101;
+        let market_asset_names_id = 101;
         let supply_long_id = 102;
         let supply_short_id = 103;
         let demand_long_id = 104;
@@ -191,7 +191,7 @@ impl Daxos {
         let delta_short_id = 107;
         let solve_quadratic_id = 10;
 
-        // TODO: get those from Vault and Gateway
+        // TODO: get those from Vault and Market
         let update = execute_buy_order(
             index_order_id,
             executed_index_quantities_id,
@@ -199,7 +199,7 @@ impl Daxos {
             asset_names_id,
             weights_id,
             quote_id,
-            inventory_asset_names_id,
+            market_asset_names_id,
             supply_long_id,
             supply_short_id,
             demand_long_id,
@@ -214,17 +214,17 @@ impl Daxos {
     }
 
     pub fn submit_supply(&mut self) -> Result<(), Vec<u8>> {
-        let gateway_address = self.gateway.get();
-        let submit = IGateway::submitSupplyCall {};
+        let market_address = self.market.get();
+        let submit = IMarket::submitSupplyCall {};
         self.vm()
-            .call(&self, gateway_address, &submit.abi_encode())?;
+            .call(&self, market_address, &submit.abi_encode())?;
 
-        let [inventory_asset_names_id, supply_long_id, supply_short_id, demand_long_id, demand_short_id, delta_long_id, delta_short_id] =
+        let [market_asset_names_id, supply_long_id, supply_short_id, demand_long_id, demand_short_id, delta_long_id, delta_short_id] =
             [0; 7];
 
-        // TODO: get those from Gateway
+        // TODO: get those from Market
         let update = update_supply(
-            inventory_asset_names_id,
+            market_asset_names_id,
             supply_long_id,
             supply_short_id,
             demand_long_id,

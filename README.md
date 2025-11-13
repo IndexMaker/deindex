@@ -7,18 +7,20 @@ This is ***Decentralised Index Maker (DeIndex)*** project.
 
 ## Architecture
 
+<img src="./docs/Components.jpg">
+
 ### **On-Chain Components:**
 
 - *Vault*     - Represents ITP Token, implements *ERC20*, and stores: asset weights, prices, and user's orders.
-- *Gateway*   - Stores asset market data, and inventory state, i.e. supply, demand and delta.
-- *Daxos*     - Orchestrates all business logic.
+- *Market*   - Stores asset market data, and market state, i.e. supply, demand and delta.
+- *Daxos*     - Orchestrates all business logic. Goes to *Market* to create *Demand*.
 - *DeVIL*     - Executes Vector Math programs such as: order execution, quote update, supply update.
 
 ### **Off-Chain Components**
 
 - *Frontend*       - Connects user wallet, and provides user interface to buy/sell ITP Index.
 - *Backend*        - Manages and stores database of ITP Indexes and provides additional metrics.
-- *Supplier (AP)*  - Asset Supplier / Authorized Provider for supplying assets from CEX / DEX.
+- *Vendor*         - Authorized Provider supplying assets from CEX / DEX. Goes to *Market* to create *Supply*.
 - *Relayer*        - RPC Relayer for collateral routing.
 - *Quoter*         - Poking bot for updating Index prices.
 
@@ -50,7 +52,7 @@ so that they are used the next time instant fill is processed.
 
 #### Submit Inventory
 
-Here external service adds new *Inventory* to the pool.
+Here *Vendor* service adds new *Inventory* to the pool.
 
 <img src="./docs/SubmitInventory.jpg">
 
@@ -59,7 +61,7 @@ Here external service adds new *Inventory* to the pool.
 
 This design delegates all vector math computation to Vector IL virtual machine, which is critical
 for achieving high performance zero-copy, minimum blockchain load/store overhead, and yet plenty
-of WASM space for implementing business logic in the client contracts, i.e. *Vault*, *Gateway*, and
+of WASM space for implementing business logic in the client contracts, i.e. *Vault*, *Market*, and
 *Daxos*.
 
 ### Smart-Contracts

@@ -9,7 +9,7 @@ pub fn execute_buy_order(
     asset_names_id: u128,
     asset_weights_id: u128,
     index_quote_id: u128,
-    inventory_asset_names_id: u128,
+    market_asset_names_id: u128,
     supply_long_id: u128,
     supply_short_id: u128,
     demand_long_id: u128,
@@ -60,31 +60,31 @@ pub fn execute_buy_order(
         STR         _AssetQuantities            // Stack: [CIQ]
         POPN        1                           // Stack: []
 
-        // Match Inventory: Update Demand and Delta
+        // Match Market: Update Demand and Delta
         LDL         asset_names_id              // Stack [AssetNames]
-        LDL         inventory_asset_names_id    // Stack [AssetNames, InventoryAssetNames]
+        LDL         market_asset_names_id       // Stack [AssetNames, MarketAssetNames]
         
         // Compute Demand Short = MAX(Demand Short - Asset Quantities, 0)
-        LDV         demand_short_id             // Stack [AssetNames, InventoryAssetNames, DS_old]
-        LDR         _AssetQuantities            // Stack [AssetNames, InventoryAssetNames, DS_old, AQ]
-        LDD         1                           // Stack [AssetNames, InventoryAssetNames, DS_old, AQ, DS_old]
-        JFLT        3   4                       // Stack [AssetNames, InventoryAssetNames, DS_old, AQ, fDS_old]
-        LDD         0                           // Stack [AssetNames, InventoryAssetNames, DS_old, AQ, fDS_old, fDS_old]
-        SSB         2                           // Stack [AssetNames, InventoryAssetNames, DS_old, AQ, fDS_old, fDS_new = (fDS_old s- AQ)]
-        SWAP        3                           // Stack [AssetNames, InventoryAssetNames, fDS_new, AQ, fDS_old, DS_old]
-        JUPD        3   4   5                   // Stack [AssetNames, InventoryAssetNames, fDS_new, AQ, fDS_old, DS_new]
-        SWAP        3                           // Stack [AssetNames, InventoryAssetNames, DS_new, AQ, fDS_old, fDS_new]
-        POPN        1                           // Stack [AssetNames, InventoryAssetNames, DS_new, AQ, fDS_old]
+        LDV         demand_short_id             // Stack [AssetNames, MarketAssetNames, DS_old]
+        LDR         _AssetQuantities            // Stack [AssetNames, MarketAssetNames, DS_old, AQ]
+        LDD         1                           // Stack [AssetNames, MarketAssetNames, DS_old, AQ, DS_old]
+        JFLT        3   4                       // Stack [AssetNames, MarketAssetNames, DS_old, AQ, fDS_old]
+        LDD         0                           // Stack [AssetNames, MarketAssetNames, DS_old, AQ, fDS_old, fDS_old]
+        SSB         2                           // Stack [AssetNames, MarketAssetNames, DS_old, AQ, fDS_old, fDS_new = (fDS_old s- AQ)]
+        SWAP        3                           // Stack [AssetNames, MarketAssetNames, fDS_new, AQ, fDS_old, DS_old]
+        JUPD        3   4   5                   // Stack [AssetNames, MarketAssetNames, fDS_new, AQ, fDS_old, DS_new]
+        SWAP        3                           // Stack [AssetNames, MarketAssetNames, DS_new, AQ, fDS_old, fDS_new]
+        POPN        1                           // Stack [AssetNames, MarketAssetNames, DS_new, AQ, fDS_old]
 
         // Compute Demand Long += MAX(Asset Quantities - Demand Short, 0)
-        SWAP        1                           // Stack [AssetNames, InventoryAssetNames, DS_new, fDS_old, AQ]
-        SSB         1                           // Stack [AssetNames, InventoryAssetNames, DS_new, fDS_old, dAQ = (AQ s- fDS_old)]
-        LDV         demand_long_id              // Stack [AssetNames, InventoryAssetNames, DS_new, fDS_old, dAQ, DL_old]
-        JADD        1   4   5                   // Stack [AssetNames, InventoryAssetNames, DS_new, fDS_old, dAQ, DL_new = (DL_old j+ dAQ)]
-        SWAP        2                           // Stack [AssetNames, InventoryAssetNames, DS_new, DL_new, dAQ, fDS_old]
-        POPN        2                           // Stack [AssetNames, InventoryAssetNames, DS_new, DL_new]
-        STR         _DemandLong                 // Stack [AssetNames, InventoryAssetNames, DS_new]
-        STR         _DemandShort                // Stack [AssetNames, InventoryAssetNames]
+        SWAP        1                           // Stack [AssetNames, MarketAssetNames, DS_new, fDS_old, AQ]
+        SSB         1                           // Stack [AssetNames, MarketAssetNames, DS_new, fDS_old, dAQ = (AQ s- fDS_old)]
+        LDV         demand_long_id              // Stack [AssetNames, MarketAssetNames, DS_new, fDS_old, dAQ, DL_old]
+        JADD        1   4   5                   // Stack [AssetNames, MarketAssetNames, DS_new, fDS_old, dAQ, DL_new = (DL_old j+ dAQ)]
+        SWAP        2                           // Stack [AssetNames, MarketAssetNames, DS_new, DL_new, dAQ, fDS_old]
+        POPN        2                           // Stack [AssetNames, MarketAssetNames, DS_new, DL_new]
+        STR         _DemandLong                 // Stack [AssetNames, MarketAssetNames, DS_new]
+        STR         _DemandShort                // Stack [AssetNames, MarketAssetNames]
         
         // Update Delta
         //
@@ -94,24 +94,24 @@ pub fn execute_buy_order(
         // Supply Long + Demand Short
         LDV         supply_long_id
         LDR         _DemandShort
-        ADD         1                           // Stack [AssetNames, InventoryAssetNames, SupplyLong, DeltaLong]
+        ADD         1                           // Stack [AssetNames, MarketAssetNames, SupplyLong, DeltaLong]
         SWAP        1
-        POPN        1                           // Stack [AssetNames, InventoryAssetNames, DeltaLong]
+        POPN        1                           // Stack [AssetNames, MarketAssetNames, DeltaLong]
 
         // Supply Short + Demand Long
         LDV         supply_short_id
         LDR         _DemandLong
-        ADD         1                           // Stack [AssetNames, InventoryAssetNames, DeltaLong, SupplyShort, DeltaShort]
+        ADD         1                           // Stack [AssetNames, MarketAssetNames, DeltaLong, SupplyShort, DeltaShort]
         SWAP        1
-        POPN        1                           // Stack [AssetNames, InventoryAssetNames, DeltaLong, DeltaShort]
+        POPN        1                           // Stack [AssetNames, MarketAssetNames, DeltaLong, DeltaShort]
 
         // Delta Long - Delta Short
-        LDD         0                           // Stack [AssetNames, InventoryAssetNames, DeltaLong, DeltaShort, DeltaShort]
-        SSB         2                           // Stack [AssetNames, InventoryAssetNames, DeltaLong, DeltaShort, RS = (DeltaShort s- DeltaLong)]
-        STR         _DeltaShort                 // Stack [AssetNames, InventoryAssetNames, DeltaLong, DeltaShort]
-        SWAP        1                           // Stack [AssetNames, InventoryAssetNames, DeltaShort, DeltaLong]
-        SSB         1                           // Stack [AssetNames, InventoryAssetNames, DeltaShort, RL = (DeltaLong s- DeltaShort)]
-        STR         _DeltaLong                  // Stack [AssetNames, InventoryAssetNames, DeltaShort]
+        LDD         0                           // Stack [AssetNames, MarketAssetNames, DeltaLong, DeltaShort, DeltaShort]
+        SSB         2                           // Stack [AssetNames, MarketAssetNames, DeltaLong, DeltaShort, RS = (DeltaShort s- DeltaLong)]
+        STR         _DeltaShort                 // Stack [AssetNames, MarketAssetNames, DeltaLong, DeltaShort]
+        SWAP        1                           // Stack [AssetNames, MarketAssetNames, DeltaShort, DeltaLong]
+        SSB         1                           // Stack [AssetNames, MarketAssetNames, DeltaShort, RL = (DeltaLong s- DeltaShort)]
+        STR         _DeltaLong                  // Stack [AssetNames, MarketAssetNames, DeltaShort]
         POPN        3                           // Stack []
 
         // Store Demand

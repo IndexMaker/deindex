@@ -21,7 +21,7 @@ sol! {
 
 #[storage]
 #[entrypoint]
-pub struct Gateway {
+pub struct Market {
     owner: StorageAddress,
     devil: StorageAddress,
     supply_long: StorageU128,  // Vector = [+Supply; num_assets]
@@ -35,7 +35,7 @@ pub struct Gateway {
     slopes: StorageU128,       // Vector = [Slope; num_assets]
 }
 
-impl Gateway {
+impl Market {
     fn check_owner(&self, address: Address) -> Result<(), Vec<u8>> {
         let current_owner = self.owner.get();
         if !current_owner.is_zero() && address != current_owner {
@@ -46,7 +46,7 @@ impl Gateway {
 }
 
 #[public]
-impl Gateway {
+impl Market {
     pub fn setup(&mut self, owner: Address, devil: Address) -> Result<(), Vec<u8>> {
         self.check_owner(self.vm().msg_sender())?;
         self.owner.set(owner);

@@ -1,9 +1,9 @@
 use devil_macros::devil;
 
-/// Update Inventory (Supply, Delta)
+/// Update Market (Supply, Delta)
 /// 
 pub fn update_supply(
-    inventory_asset_names_id: u128,
+    market_asset_names_id: u128,
     _supply_long_id: u128,
     _supply_short_id: u128,
     _demand_long_id: u128,
@@ -13,6 +13,6 @@ pub fn update_supply(
 ) -> Vec<u128> {
     devil! {
         // TODO: Write implementation
-        LDV  inventory_asset_names_id
+        LDV  market_asset_names_id
     }
 }
