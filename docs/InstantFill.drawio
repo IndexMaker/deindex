@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8">
   <diagram name="Page-1" id="d-_dWrxdyA6jsn5D4D8U">
-    <mxGraphModel dx="984" dy="631" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="895" dy="574" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -11,19 +11,19 @@
           <mxGeometry x="110" y="330" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="ARYfZtA4eTBdnawsH5dG-15" value="&lt;font size=&quot;1&quot; style=&quot;&quot;&gt;&lt;b style=&quot;font-size: 24px;&quot;&gt;New Order: Instant Fill&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="340" y="40" width="280" height="40" as="geometry" />
+          <mxGeometry x="360" y="30" width="280" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="PY2w5H_Z-JwWFCIUhqma-2" value="2. Get Labels &amp;amp; Vector IDs:&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;Find vector in mapping:&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;User =&amp;gt; Order (vector ID)&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-8" edge="1">
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-2" value="5. Get Labels &amp;amp; Vector IDs:&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;Find vector in mapping:&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;User =&amp;gt; Order (vector ID)&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-8" edge="1">
           <mxGeometry x="0.7273" y="-60" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="PY2w5H_Z-JwWFCIUhqma-3" value="3. Get Labels &amp;amp; Vector IDs:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Market Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-9" edge="1">
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-3" value="6. Get Labels &amp;amp; Vector IDs:&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;ul style=&quot;line-height: 100%;&quot;&gt;&lt;li&gt;Market Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-9" edge="1">
           <mxGeometry x="-0.6429" y="40" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="PY2w5H_Z-JwWFCIUhqma-4" value="4. Execute Buy Order stored procedure&lt;div&gt;passing arguments:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;li&gt;Order: Collateral, Spend, Minted&lt;/li&gt;&lt;li&gt;Market Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-10" edge="1">
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-4" value="7. Execute Buy Order stored procedure&lt;div&gt;passing arguments:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Asset Names&lt;/li&gt;&lt;li&gt;Asset Weights&lt;/li&gt;&lt;li&gt;Quote: Capacity, Price, Slope&lt;/li&gt;&lt;li&gt;Order: Collateral, Spend, Minted&lt;/li&gt;&lt;li&gt;Market Asset Names&lt;/li&gt;&lt;li&gt;Demand, Supply, Delta&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-5" target="PY2w5H_Z-JwWFCIUhqma-10" edge="1">
           <mxGeometry y="20" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -31,13 +31,18 @@
         <mxCell id="PY2w5H_Z-JwWFCIUhqma-5" value="Daxos&lt;div&gt;(Orchestrator)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="440" y="340" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="PY2w5H_Z-JwWFCIUhqma-6" value="1. Place Index Order" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="PY2w5H_Z-JwWFCIUhqma-7" target="PY2w5H_Z-JwWFCIUhqma-5" edge="1">
-          <mxGeometry x="-0.1836" y="18" relative="1" as="geometry">
-            <mxPoint y="1" as="offset" />
+        <mxCell id="PY2w5H_Z-JwWFCIUhqma-6" value="4. Place Index Order" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=none;align=left;" parent="1" source="wWz_cxhUnu6P2EgTIeui-4" target="PY2w5H_Z-JwWFCIUhqma-5" edge="1">
+          <mxGeometry x="-0.2857" y="10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wWz_cxhUnu6P2EgTIeui-6" value="1. Select an Index&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;3. Enter USDC amount&lt;/div&gt;&lt;div&gt;and click Buy&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=left;labelBackgroundColor=none;" edge="1" parent="1" source="PY2w5H_Z-JwWFCIUhqma-7" target="wWz_cxhUnu6P2EgTIeui-4">
+          <mxGeometry x="-0.5238" y="30" relative="1" as="geometry">
+            <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="PY2w5H_Z-JwWFCIUhqma-7" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;labelBackgroundColor=none;" parent="1" vertex="1">
-          <mxGeometry x="485" y="140" width="30" height="60" as="geometry" />
+          <mxGeometry x="200" y="140" width="30" height="60" as="geometry" />
         </mxCell>
         <mxCell id="PY2w5H_Z-JwWFCIUhqma-8" value="Vault" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="100" y="340" width="120" height="60" as="geometry" />
@@ -53,6 +58,23 @@
         </mxCell>
         <mxCell id="PY2w5H_Z-JwWFCIUhqma-14" value="&lt;div&gt;Daxos loads details from Vault and Market, and passes them into stored procedure in DeVIL.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;DeVIL executes stored procedure, which:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Computes Index Quantity for Collateral Amount&lt;/li&gt;&lt;li&gt;Caps Index Quantity with Capacity&lt;/li&gt;&lt;li&gt;Generates Individual Asset Orders&lt;/li&gt;&lt;li&gt;Matches Asset Orders with Demand&lt;/li&gt;&lt;li&gt;Updates Delta using Supply vs Demand formula&lt;/li&gt;&lt;li&gt;Updates Collateral Remaining and Spent on user&#39;s Order&lt;/li&gt;&lt;li&gt;Updates Index Token Minted on user&#39;s Order&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;Daxos then reads resulting data, and it may:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Mint ITP Token by calling Vault&#39;s method&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=20;spacing=10;align=left;spacingTop=30;" parent="1" vertex="1">
           <mxGeometry x="40" y="440" width="360" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="wWz_cxhUnu6P2EgTIeui-1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;endArrow=none;endFill=0;shape=link;" edge="1" parent="1" source="wWz_cxhUnu6P2EgTIeui-2" target="wWz_cxhUnu6P2EgTIeui-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wWz_cxhUnu6P2EgTIeui-2" value="Backend" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="670" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="wWz_cxhUnu6P2EgTIeui-3" value="2. List Indexes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="wWz_cxhUnu6P2EgTIeui-4" target="wWz_cxhUnu6P2EgTIeui-2">
+          <mxGeometry x="-0.0667" y="10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wWz_cxhUnu6P2EgTIeui-4" value="Frontend" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="440" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="wWz_cxhUnu6P2EgTIeui-5" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="130" width="60" height="80" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
